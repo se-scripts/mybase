@@ -101,7 +101,7 @@ namespace IngameScript
 
             BuildProductionListBase();
 
-            GridTerminalSystem.GetBlocksOfType(cargoContainers, b => b.IsSameConstructAs(Me));
+            GridTerminalSystem.GetBlocksOfType(cargoContainers); // 连接器连接的网格的存储设备也算进来
             GridTerminalSystem.GetBlocksOfType(panels, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
@@ -113,8 +113,8 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(panels_Assemblers, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Assembler_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(oxygenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Hydrogen") && !b.DefinitionDisplayNameText.ToString().Contains("氢气"));
             GridTerminalSystem.GetBlocksOfType(hydrogenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Oxygen") && !b.DefinitionDisplayNameText.ToString().Contains("氧气"));
-            GridTerminalSystem.GetBlocksOfType(assemblers, b => b.IsSameConstructAs(Me));
-            GridTerminalSystem.GetBlocksOfType(refineries, b => b.IsSameConstructAs(Me) && !b.BlockDefinition.ToString().Contains("Shield"));
+            GridTerminalSystem.GetBlocksOfType(assemblers); // 连接器连接的网格的装配机设备也算进来
+            GridTerminalSystem.GetBlocksOfType(refineries, b => !b.BlockDefinition.ToString().Contains("Shield")); // 连接器连接的网格的精炼设备也算进来
             GridTerminalSystem.GetBlocksOfType(powerProducers); // 连接器连接的网格的发电设备也算进来
             GridTerminalSystem.GetBlocksOfType(batteries, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(reactors, b => b.IsSameConstructAs(Me));
