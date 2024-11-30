@@ -114,7 +114,7 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(hydrogenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Oxygen") && !b.DefinitionDisplayNameText.ToString().Contains("氧气"));
             GridTerminalSystem.GetBlocksOfType(assemblers, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(refineries, b => b.IsSameConstructAs(Me) && !b.BlockDefinition.ToString().Contains("Shield"));
-            GridTerminalSystem.GetBlocksOfType(powerProducers, b => b.IsSameConstructAs(Me));
+            GridTerminalSystem.GetBlocksOfType(powerProducers); // 连接器连接的网格的发电设备也算进来
             GridTerminalSystem.GetBlocksOfType(reactors, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
 
