@@ -30,6 +30,7 @@ namespace IngameScript
         List<IMyAssembler> assemblers = new List<IMyAssembler>();
         List<IMyRefinery> refineries = new List<IMyRefinery>();
         List<IMyPowerProducer> powerProducers = new List<IMyPowerProducer>();
+        List<IMyBatteryBlock> batteries = new List<IMyBatteryBlock>();
         List<IMyReactor> reactors = new List<IMyReactor>();
         List<IMyGasGenerator> gasGenerators = new List<IMyGasGenerator>();
         List<string> spritesList = new List<string>();
@@ -115,6 +116,7 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(assemblers, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(refineries, b => b.IsSameConstructAs(Me) && !b.BlockDefinition.ToString().Contains("Shield"));
             GridTerminalSystem.GetBlocksOfType(powerProducers); // 连接器连接的网格的发电设备也算进来
+            GridTerminalSystem.GetBlocksOfType(batteries, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(reactors, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
 
@@ -324,6 +326,18 @@ namespace IngameScript
             ProgressBar(frame, x_Right, y4 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
             PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 3, 1.2f, TextAlignment.CENTER);
             PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 3 + itemBox_ColumnInterval_Float / 2, 1.2f, TextAlignment.CENTER);
+
+            // Battery
+            float y5 = y4 + itemBox_ColumnInterval_Float;
+            sprite = MySprite.CreateSprite("MyObjectBuilder_Component/PowerCell", new Vector2(x_Left, y5), new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2));
+            frame.Add(sprite);
+            CalculateBatteries(out percentage_String, out finalValue_String);
+            PanelWriteText(frame, batteries.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 4, 0.55f, TextAlignment.RIGHT);
+            ProgressBar(frame, x_Right, y5 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
+            PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 4, 1.2f, TextAlignment.CENTER);
+            PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 4 + itemBox_ColumnInterval_Float / 2, 1.2f, TextAlignment.CENTER);
+
+            
         }
 
         public void ProgressBar(MySpriteDrawFrame frame, float x, float y, float width, float height, string ratio)
@@ -412,6 +426,20 @@ namespace IngameScript
             {
                 currentOutput += powerProducer.CurrentOutput;
                 totalOutput += powerProducer.MaxOutput;
+            }
+
+            percentage_String = Math.Round(currentOutput / totalOutput * 100, 1).ToString() + "%";
+            finalValue_String = AmountUnitConversion(currentOutput * 1000000) + " W / " + AmountUnitConversion(totalOutput * 1000000) + " W";
+        }
+
+
+        public void CalculateBatteries(out string percentage_String, out string finalValue_String)
+        {
+            double currentOutput = 0, totalOutput = 0;
+            foreach (var battery in batteries)
+            {
+                currentOutput += battery.CurrentStoredPower;
+                totalOutput += battery.MaxStoredPower;
             }
 
             percentage_String = Math.Round(currentOutput / totalOutput * 100, 1).ToString() + "%";
