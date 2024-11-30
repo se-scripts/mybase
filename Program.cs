@@ -12,13 +12,6 @@ namespace IngameScript
 {
     partial class Program : MyGridProgram
     {
-        /*
- * R e a d m e
- * -----------
- * 
- * In this file you can include any instructions or other comments you want to have injected onto the 
- * top of your final script. You can safely delete this file if you do not want any such comments.
- */
 
         MyIni _ini = new MyIni();
 
@@ -36,9 +29,6 @@ namespace IngameScript
         List<IMyGasTank> hydrogenTanks = new List<IMyGasTank>();
         List<IMyAssembler> assemblers = new List<IMyAssembler>();
         List<IMyRefinery> refineries = new List<IMyRefinery>();
-        List<IMyShipConnector> connectors = new List<IMyShipConnector>();
-        List<IMyCryoChamber> cryoChambers = new List<IMyCryoChamber>();
-        List<IMyCockpit> cockpits = new List<IMyCockpit>();
         List<IMyPowerProducer> powerProducers = new List<IMyPowerProducer>();
         List<IMyReactor> reactors = new List<IMyReactor>();
         List<IMyGasGenerator> gasGenerators = new List<IMyGasGenerator>();
@@ -125,9 +115,6 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(hydrogenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Oxygen") && !b.DefinitionDisplayNameText.ToString().Contains("氧气"));
             GridTerminalSystem.GetBlocksOfType(assemblers, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(refineries, b => b.IsSameConstructAs(Me) && !b.BlockDefinition.ToString().Contains("Shield"));
-            GridTerminalSystem.GetBlocksOfType(connectors, b => b.IsSameConstructAs(Me));
-            GridTerminalSystem.GetBlocksOfType(cryoChambers, b => b.IsSameConstructAs(Me));
-            GridTerminalSystem.GetBlocksOfType(cockpits, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(powerProducers, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(reactors, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
@@ -1186,7 +1173,6 @@ namespace IngameScript
             {
                 case 1:
                     Assembler_to_CargoContainers();
-                    ShowProductionQueue();
                     break;
                 case 2:
                     Refinery_to_CargoContainers();
@@ -1195,7 +1181,7 @@ namespace IngameScript
                     Assembler_to_CargoContainers();
                     break;
                 case 4:
-                    Others_to_CargoContainers();
+                    ShowProductionQueue();
                     break;
                 case 5:
                     Assembler_to_CargoContainers();
@@ -1358,33 +1344,6 @@ namespace IngameScript
             counter_RefineryManagement++;
         }// Refinery_to_CargoContainers END!
 
-        public void Others_to_CargoContainers()
-        {
-            foreach (var cargoContainer in cargoContainers)
-            {
-                //Echo("Connectors!");
-                foreach (var connector in connectors)
-                {
-                    List<MyInventoryItem> items1 = new List<MyInventoryItem>();
-                    connector.GetInventory().GetItems(items1);
-                    foreach (var item in items1)
-                    {
-                        bool tf = connector.GetInventory().TransferItemTo(cargoContainer.GetInventory(), item);
-                    }
-                }
-
-                //Echo("cryoChambers!");
-                foreach (var cryoChamber in cryoChambers)
-                {
-                    List<MyInventoryItem> items2 = new List<MyInventoryItem>();
-                    cryoChamber.GetInventory().GetItems(items2);
-                    foreach (var item in items2)
-                    {
-                        bool tf = cryoChamber.GetInventory().TransferItemTo(cargoContainer.GetInventory(), item);
-                    }
-                }
-            }
-        }// Others_to_CargoContainers END!
 
         public void Bottles_to_Tanks(string itemType, List<IMyGasTank> tanks)
         {
@@ -1407,22 +1366,6 @@ namespace IngameScript
             }
         }// Bottles_to_Tanks END!
 
-        public void Cockpit_to_CargoContainers(string argument)
-        {
-            if (argument != "CPT") return;
-            foreach (var cargoContainer in cargoContainers)
-            {
-                foreach (var cockpit in cockpits)
-                {
-                    List<MyInventoryItem> items1 = new List<MyInventoryItem>();
-                    cockpit.GetInventory().GetItems(items1);
-                    foreach (var item in items1)
-                    {
-                        bool tf = cockpit.GetInventory().TransferItemTo(cargoContainer.GetInventory(), item);
-                    }
-                }
-            }
-        }// Cockpit_to_CargoContainers END!
 
         public void ShowProductionQueue()
         {
@@ -1773,7 +1716,6 @@ namespace IngameScript
                     break;
             }
 
-            Cockpit_to_CargoContainers(argument);
 
             FacilitiesControl(argument);
 
