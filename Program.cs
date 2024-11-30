@@ -45,7 +45,6 @@ namespace IngameScript
         int counter_ProgramRefresh = 0, counter_ShowItems = 0, counter_ShowFacilities = 0, counter_InventoryManagement = 0, counter_AssemblerManagement = 0, counter_RefineryManagement = 0, counter_Panel = 0;
         double counter_Logo = 0;
         const string icetoUranium_Section = "Ice_To_Uranium", buttonOn_Key = "Button_On";
-        double iceAmount_Double, uraniumAmount_Double;
 
         Color background_Color = new Color(0, 35, 45);
         Color border_Color = new Color(0, 130, 255);
@@ -1631,53 +1630,12 @@ namespace IngameScript
 
             float x = 512 / 2, y1 = 205;
             DrawLogo(frame, x, y1, 200);
-            PanelWriteText(frame, "Inventory_Management\nWith_Graphic_Interface_V1.2\nby Hi.James", x, y1 + 110, 1f, TextAlignment.CENTER);
+            PanelWriteText(frame, "Base_Inventory_Management\nWith_Graphic_Interface_V2.0\nby Hi.James and Chivehao.", x, y1 + 110, 1f, TextAlignment.CENTER);
 
             frame.Dispose();
 
         }
 
-        /*  Broadcast Connectors GPS    */
-        public void Broadcast_Connectors_GPS()
-        {
-            string value_String;
-            GetConfiguration_from_CustomData(information_Section, broadCastConnectorGPS_Key, out value_String);
-            if (value_String != "Y") return;
-
-            List<IMyShipConnector> connectors = new List<IMyShipConnector>();
-            GridTerminalSystem.GetBlocksOfType(connectors, block => block.IsConnected == false && !block.CustomData.Contains("[IGC_NO]") && block.IsSameConstructAs(Me));
-
-            if (connectors.Count == 0) return;
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.Clear();
-            sb.Append(connectors.Count.ToString());
-            sb.Append("=");
-
-            foreach (var connector in connectors)
-            {
-                sb.Append("【");
-                sb.Append(connector.CustomName.ToString());
-                sb.Append("：");
-                sb.Append(connector.GetPosition().X.ToString());
-                sb.Append("：");
-                sb.Append(connector.GetPosition().Y.ToString());
-                sb.Append("：");
-                sb.Append(connector.GetPosition().Z.ToString());
-                sb.Append("：");
-                sb.Append(connector.WorldMatrix.Forward.X.ToString());
-                sb.Append("：");
-                sb.Append(connector.WorldMatrix.Forward.Y.ToString());
-                sb.Append("：");
-                sb.Append(connector.WorldMatrix.Forward.Z.ToString());
-            }
-
-            IGC.SendBroadcastMessage("Connectors_Information", sb.ToString());
-
-            WriteConfiguration_to_CustomData("Connectors_Information", "Value", sb.ToString());
-        }
-        /*  Broadcast Connectors GPS    */
 
 
         public void Main(string argument, UpdateType updateSource)
@@ -1711,8 +1669,6 @@ namespace IngameScript
                     ManageInventory();
                     break;
                 case 16:
-                    Echo("Broadcast_Connectors_GPS");
-                    Broadcast_Connectors_GPS();
                     break;
             }
 
