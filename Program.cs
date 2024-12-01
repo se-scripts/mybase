@@ -43,10 +43,12 @@ namespace IngameScript
         const int itemAmountInEachScreen = 35, facilityAmountInEachScreen = 20;
         const float itemBox_ColumnInterval_Float = 73, itemBox_RowInterval_Float = 102, amountBox_Height_Float = 24, facilityBox_RowInterval_Float = 25.5f;
         const string information_Section = "Information", broadCastConnectorGPS_Key = "BroadCastConnectorGPS (Y/N)";
-        const string translateList_Section = "Translate_List", length_Key = "Length", autoProduction_Section = "Auto_Production", autoProduction_Key = "Auto_Production(Y/N)", autoPowerControl_Key = "Auto_Power_Control(Y/N)";
+        const string translateList_Section = "Translate_List", length_Key = "Length";
         int counter_ProgramRefresh = 0, counter_ShowItems = 0, counter_ShowFacilities = 0, counter_InventoryManagement = 0, counter_AssemblerManagement = 0, counter_RefineryManagement = 0, counter_Panel = 0;
         double counter_Logo = 0;
-        const string icetoUranium_Section = "Ice_To_Uranium", buttonOn_Key = "Button_On";
+        const string icetoUranium_Section = "Ice_To_Uranium", buttonOn_Key = "Button_On", BasicConfig_Selection = "BasicConfig", TerminalBlockHasConnectorGrid_Key = "TerminalBlockHasConnectorGrid";
+        const string DefaultTerminalBlockHasConnectorGridValue = "true";
+
 
         Color background_Color = new Color(0, 35, 45);
         Color border_Color = new Color(0, 130, 255);
@@ -100,8 +102,11 @@ namespace IngameScript
 
             BuildTranslateDic();
 
+            string terminalBlockHasConnectorGrid = DefaultTerminalBlockHasConnectorGridValue;
+            GetConfiguration_from_CustomData(BasicConfig_Selection, TerminalBlockHasConnectorGrid_Key, out terminalBlockHasConnectorGrid);
+            bool isTerminalBlockHasConnectorGrid = (terminalBlockHasConnectorGrid == "true");
 
-            GridTerminalSystem.GetBlocksOfType(cargoContainers); // 连接器连接的网格的存储设备也算进来
+            GridTerminalSystem.GetBlocksOfType(cargoContainers, b => (isTerminalBlockHasConnectorGrid ? b.IsSameConstructAs(Me) : true)); 
             GridTerminalSystem.GetBlocksOfType(panels, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
@@ -113,9 +118,9 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(panels_Assemblers, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Assembler_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(oxygenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Hydrogen") && !b.DefinitionDisplayNameText.ToString().Contains("氢气"));
             GridTerminalSystem.GetBlocksOfType(hydrogenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Oxygen") && !b.DefinitionDisplayNameText.ToString().Contains("氧气"));
-            GridTerminalSystem.GetBlocksOfType(assemblers); // 连接器连接的网格的装配机设备也算进来
-            GridTerminalSystem.GetBlocksOfType(refineries, b => !b.BlockDefinition.ToString().Contains("Shield")); // 连接器连接的网格的精炼设备也算进来
-            GridTerminalSystem.GetBlocksOfType(powerProducers); // 连接器连接的网格的发电设备也算进来
+            GridTerminalSystem.GetBlocksOfType(assemblers, b => (isTerminalBlockHasConnectorGrid ? b.IsSameConstructAs(Me) : true));
+            GridTerminalSystem.GetBlocksOfType(refineries, b => !b.BlockDefinition.ToString().Contains("Shield") && (isTerminalBlockHasConnectorGrid ? b.IsSameConstructAs(Me) : true)); 
+            GridTerminalSystem.GetBlocksOfType(powerProducers, b => (isTerminalBlockHasConnectorGrid ? b.IsSameConstructAs(Me) : true)); 
             GridTerminalSystem.GetBlocksOfType(batteries, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(reactors, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
@@ -217,30 +222,7 @@ namespace IngameScript
                 _ini.Set(translateList_Section, length_Key, "1");
                 _ini.Set(translateList_Section, "1", "AH_BoreSight:More");
 
-                _ini.Set(autoProduction_Section, autoPowerControl_Key, "N");
-                _ini.Set(autoProduction_Section, autoProduction_Key, "N");
-                _ini.Set(autoProduction_Section, length_Key, "21");
-                _ini.Set(autoProduction_Section, "1", "MyObjectBuilder_Component/SteelPlate:MyObjectBuilder_BlueprintDefinition/SteelPlate:5000");
-                _ini.Set(autoProduction_Section, "2", "MyObjectBuilder_Component/InteriorPlate:MyObjectBuilder_BlueprintDefinition/InteriorPlate:5000");
-                _ini.Set(autoProduction_Section, "3", "MyObjectBuilder_Component/Construction:MyObjectBuilder_BlueprintDefinition/ConstructionComponent:5000");
-                _ini.Set(autoProduction_Section, "4", "MyObjectBuilder_Component/Motor:MyObjectBuilder_BlueprintDefinition/MotorComponent:5000");
-                _ini.Set(autoProduction_Section, "5", "MyObjectBuilder_Component/Computer:MyObjectBuilder_BlueprintDefinition/ComputerComponent:5000");
-                _ini.Set(autoProduction_Section, "6", "MyObjectBuilder_Component/MetalGrid:MyObjectBuilder_BlueprintDefinition/MetalGrid:5000");
-                _ini.Set(autoProduction_Section, "7", "MyObjectBuilder_Component/SmallTube:MyObjectBuilder_BlueprintDefinition/SmallTube:5000");
-                _ini.Set(autoProduction_Section, "8", "MyObjectBuilder_Component/LargeTube:MyObjectBuilder_BlueprintDefinition/LargeTube:5000");
-                _ini.Set(autoProduction_Section, "9", "MyObjectBuilder_Component/Display:MyObjectBuilder_BlueprintDefinition/Display:5000");
-                _ini.Set(autoProduction_Section, "10", "MyObjectBuilder_Component/Girder:MyObjectBuilder_BlueprintDefinition/GirderComponent:5000");
-                _ini.Set(autoProduction_Section, "11", "MyObjectBuilder_Component/BulletproofGlass:MyObjectBuilder_BlueprintDefinition/BulletproofGlass:5000");
-                _ini.Set(autoProduction_Section, "12", "MyObjectBuilder_Component/Detector:MyObjectBuilder_BlueprintDefinition/DetectorComponent:5000");
-                _ini.Set(autoProduction_Section, "13", "MyObjectBuilder_Component/Reactor:MyObjectBuilder_BlueprintDefinition/ReactorComponent:5000");
-                _ini.Set(autoProduction_Section, "14", "MyObjectBuilder_Component/PowerCell:MyObjectBuilder_BlueprintDefinition/PowerCell:5000");
-                _ini.Set(autoProduction_Section, "15", "MyObjectBuilder_Component/SolarCell:MyObjectBuilder_BlueprintDefinition/SolarCell:5000");
-                _ini.Set(autoProduction_Section, "16", "MyObjectBuilder_Component/Superconductor:MyObjectBuilder_BlueprintDefinition/Superconductor:5000");
-                _ini.Set(autoProduction_Section, "17", "MyObjectBuilder_Component/GravityGenerator:MyObjectBuilder_BlueprintDefinition/GravityGeneratorComponent:100");
-                _ini.Set(autoProduction_Section, "18", "MyObjectBuilder_Component/Medical:MyObjectBuilder_BlueprintDefinition/MedicalComponent:100");
-                _ini.Set(autoProduction_Section, "19", "MyObjectBuilder_Component/RadioCommunication:MyObjectBuilder_BlueprintDefinition/RadioCommunicationComponent:100");
-                _ini.Set(autoProduction_Section, "20", "MyObjectBuilder_GasContainerObject/HydrogenBottle:MyObjectBuilder_BlueprintDefinition/Position0020_HydrogenBottle:100");
-                _ini.Set(autoProduction_Section, "21", "MyObjectBuilder_OxygenContainerObject/OxygenBottle:MyObjectBuilder_BlueprintDefinition/Position0010_OxygenBottle:100");
+                _ini.Set(BasicConfig_Selection, TerminalBlockHasConnectorGrid_Key, DefaultTerminalBlockHasConnectorGridValue);
                 Me.CustomData = _ini.ToString();
             }// End if
 
