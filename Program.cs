@@ -100,7 +100,6 @@ namespace IngameScript
 
             BuildTranslateDic();
 
-            BuildProductionListBase();
 
             GridTerminalSystem.GetBlocksOfType(cargoContainers); // 连接器连接的网格的存储设备也算进来
             GridTerminalSystem.GetBlocksOfType(panels, b => b.IsSameConstructAs(Me));
