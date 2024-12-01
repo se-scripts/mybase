@@ -46,8 +46,14 @@ namespace IngameScript
         const string translateList_Section = "Translate_List", length_Key = "Length";
         int counter_ProgramRefresh = 0, counter_ShowItems = 0, counter_ShowFacilities = 0, counter_InventoryManagement = 0, counter_AssemblerManagement = 0, counter_RefineryManagement = 0, counter_Panel = 0;
         double counter_Logo = 0;
-        const string icetoUranium_Section = "Ice_To_Uranium", buttonOn_Key = "Button_On", BasicConfig_Selection = "BasicConfig", TerminalBlockHasConnectorGrid_Key = "TerminalBlockHasConnectorGrid";
-        const string DefaultTerminalBlockHasConnectorGridValue = "false"; // true or false
+        const string icetoUranium_Section = "Ice_To_Uranium", buttonOn_Key = "Button_On";
+        const string basicConfigSelection = "BasicConfig"
+            , isCargoSameConstructAsKey = "IsCargoSameConstructAs", defaultIsCargoSameConstructAsValue = "false"
+            , isAssemblerSameConstructAsKey = "IsAssemblerSameConstructAs", defaultIsAssemblerSameConstructAsValue = "false"
+            , isRefinerySameConstructAsKey = "IsRefinerySameConstructAs", defaultIsRefinerySameConstructAsValue = "false"
+            , isPowerProducerSameConstructAsKey = "IsPowerProducerSameConstructAs", defaultIsPowerProducerSameConstructAsValue = "false"
+            , isBatteryBlockSameConstructAsKey = "IsBatteryBlockSameConstructAs", defaultIsBatteryBlockSameConstructAsValue = "false"
+            , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "false";
 
 
         Color background_Color = new Color(0, 35, 45);
@@ -102,28 +108,49 @@ namespace IngameScript
 
             BuildTranslateDic();
 
-            string terminalBlockHasConnectorGrid = DefaultTerminalBlockHasConnectorGridValue;
-            GetConfiguration_from_CustomData(BasicConfig_Selection, TerminalBlockHasConnectorGrid_Key, out terminalBlockHasConnectorGrid);
-            bool isTerminalBlockHasConnectorGrid = (terminalBlockHasConnectorGrid == "true");
+            string isCargoSameConstructAsStr = defaultIsCargoSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isCargoSameConstructAsKey, out isCargoSameConstructAsStr);
+            bool isCargoSameConstructAs = (isCargoSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(cargoContainers, b => (isCargoSameConstructAs ? b.IsSameConstructAs(Me) : true)); 
 
-            GridTerminalSystem.GetBlocksOfType(cargoContainers, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me))); 
-            GridTerminalSystem.GetBlocksOfType(panels, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)));
-            GridTerminalSystem.GetBlocksOfType(panels_Overall, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)) && b.CustomName.Contains("LCD_Overall_Display"));
-            GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)) && b.CustomName.Contains("LCD_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Items_Ore, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)) && b.CustomName.Contains("LCD_Ore_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Items_Ingot, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)) && b.CustomName.Contains("LCD_Ingot_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Items_Component, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)) && b.CustomName.Contains("LCD_Component_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Items_AmmoMagazine, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)) && b.CustomName.Contains("LCD_AmmoMagazine_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Refineries, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)) && b.CustomName.Contains("LCD_Refinery_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Assemblers, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)) && b.CustomName.Contains("LCD_Assembler_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(oxygenTanks, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)) && !b.DefinitionDisplayNameText.ToString().Contains("Hydrogen") && !b.DefinitionDisplayNameText.ToString().Contains("氢气"));
-            GridTerminalSystem.GetBlocksOfType(hydrogenTanks, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)) && !b.DefinitionDisplayNameText.ToString().Contains("Oxygen") && !b.DefinitionDisplayNameText.ToString().Contains("氧气"));
-            GridTerminalSystem.GetBlocksOfType(assemblers, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)));
-            GridTerminalSystem.GetBlocksOfType(refineries, b => !b.BlockDefinition.ToString().Contains("Shield") && (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me))); 
-            GridTerminalSystem.GetBlocksOfType(powerProducers, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me))); 
-            GridTerminalSystem.GetBlocksOfType(batteries, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)));
-            GridTerminalSystem.GetBlocksOfType(reactors, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)));
-            GridTerminalSystem.GetBlocksOfType(gasGenerators, b => (isTerminalBlockHasConnectorGrid ? true : b.IsSameConstructAs(Me)));
+            GridTerminalSystem.GetBlocksOfType(panels, b => b.IsSameConstructAs(Me));
+            GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
+            GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Items_Ore, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ore_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Items_Ingot, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ingot_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Items_Component, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Component_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Items_AmmoMagazine, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_AmmoMagazine_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Assemblers, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Assembler_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Refineries, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Refinery_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(oxygenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Hydrogen") && !b.DefinitionDisplayNameText.ToString().Contains("氢气"));
+            GridTerminalSystem.GetBlocksOfType(hydrogenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Oxygen") && !b.DefinitionDisplayNameText.ToString().Contains("氧气"));
+
+            string isAssemblerSameConstructAsStr = defaultIsAssemblerSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isAssemblerSameConstructAsKey, out isAssemblerSameConstructAsStr);
+            bool isAssemblerSameConstructAs = (isAssemblerSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(assemblers, b => (isAssemblerSameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            string isRefinerySameConstructAsStr = defaultIsRefinerySameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isRefinerySameConstructAsKey, out isRefinerySameConstructAsStr);
+            bool isRefinerySameConstructAs = (isRefinerySameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(refineries, b => !b.BlockDefinition.ToString().Contains("Shield") && (isRefinerySameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            string isPowerProducerSameConstructAsStr = defaultIsPowerProducerSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isPowerProducerSameConstructAsKey, out isPowerProducerSameConstructAsStr);
+            bool isPowerProducerSameConstructAs = (isPowerProducerSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(powerProducers, b => (isPowerProducerSameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            string isBatteryBlockSameConstructAsStr = defaultIsBatteryBlockSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isBatteryBlockSameConstructAsKey, out isBatteryBlockSameConstructAsStr);
+            bool isBatteryBlockSameConstructAs = (isBatteryBlockSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(batteries, b => (isBatteryBlockSameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            string isReactorSameConstructAsStr = defaultIsReactorSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isReactorSameConstructAsKey, out isReactorSameConstructAsStr);
+            bool isReactorSameConstructAs = (isReactorSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(reactors, b => (isReactorSameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
 
             //  incase no screen
             if (panels.Count < 1)
@@ -220,7 +247,13 @@ namespace IngameScript
                 _ini.Set(information_Section, "Assemblers_On", "ASS_ON:X | X=1,2,3... | Fill In Argument of Programmable Block And Press Run");
                 _ini.Set(information_Section, "Refineries_On", "REF_ON:X | X=1,2,3... | Fill In Argument of Programmable Block And Press Run");
 
-                _ini.Set(BasicConfig_Selection, TerminalBlockHasConnectorGrid_Key, DefaultTerminalBlockHasConnectorGridValue);
+
+                _ini.Set(basicConfigSelection, isCargoSameConstructAsKey, defaultIsCargoSameConstructAsValue);
+                _ini.Set(basicConfigSelection, isAssemblerSameConstructAsKey, defaultIsAssemblerSameConstructAsValue);
+                _ini.Set(basicConfigSelection, isRefinerySameConstructAsKey, defaultIsRefinerySameConstructAsValue);
+                _ini.Set(basicConfigSelection, isPowerProducerSameConstructAsKey, defaultIsPowerProducerSameConstructAsValue);
+                _ini.Set(basicConfigSelection, isBatteryBlockSameConstructAsKey, defaultIsBatteryBlockSameConstructAsValue);
+                _ini.Set(basicConfigSelection, isReactorSameConstructAsKey, defaultIsReactorSameConstructAsValue);
 
                 _ini.Set(translateList_Section, length_Key, "1");
                 _ini.Set(translateList_Section, "1", "AH_BoreSight:More");
@@ -232,7 +265,7 @@ namespace IngameScript
 
 
         /*###############     Overall     ###############*/
-        public void OverallDisplay()
+                public void OverallDisplay()
         {
             foreach (var panel in panels_Overall)
             {
