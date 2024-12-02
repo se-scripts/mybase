@@ -36,6 +36,7 @@ namespace IngameScript
         List<IMyBatteryBlock> batteries = new List<IMyBatteryBlock>();
         List<IMyReactor> reactors = new List<IMyReactor>();
         List<IMyGasGenerator> gasGenerators = new List<IMyGasGenerator>();
+        List<IMyJumpDrive> jumpDrives = new List<IMyJumpDrive>();
         List<string> spritesList = new List<string>();
 
 
@@ -50,12 +51,13 @@ namespace IngameScript
         double counter_Logo = 0;
         const string icetoUranium_Section = "Ice_To_Uranium", buttonOn_Key = "Button_On";
         const string basicConfigSelection = "BasicConfig"
-            , isCargoSameConstructAsKey = "IsCargoSameConstructAs", defaultIsCargoSameConstructAsValue = "false"
+            , isCargoSameConstructAsKey = "IsCargoSameConstructAs", defaultIsCargoSameConstructAsValue = "true"
             , isAssemblerSameConstructAsKey = "IsAssemblerSameConstructAs", defaultIsAssemblerSameConstructAsValue = "false"
             , isRefinerySameConstructAsKey = "IsRefinerySameConstructAs", defaultIsRefinerySameConstructAsValue = "false"
             , isPowerProducerSameConstructAsKey = "IsPowerProducerSameConstructAs", defaultIsPowerProducerSameConstructAsValue = "false"
             , isBatteryBlockSameConstructAsKey = "IsBatteryBlockSameConstructAs", defaultIsBatteryBlockSameConstructAsValue = "false"
-            , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "false";
+            , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "false"
+            , isJumpDriveSameConstructAsKey = "IsReactorSameConstructAs", defaultIsJumpDriveSameConstructAsValue = "true";
 
 
         Color background_Color = new Color(0, 35, 45);
@@ -153,6 +155,12 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(reactors, b => (isReactorSameConstructAs ? b.IsSameConstructAs(Me) : true));
 
             GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
+
+            string isJumpDriveSameConstructAsStr = defaultIsJumpDriveSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isJumpDriveSameConstructAsKey, out isJumpDriveSameConstructAsStr);
+            bool isJumpDriveSameConstructAs = (isJumpDriveSameConstructAsStr=="true");
+            GridTerminalSystem.GetBlocksOfType(jumpDrives, b => (isJumpDriveSameConstructAs ? b.IsSameConstructAs(Me) : true));
+
 
             //  incase no screen
             if (panels.Count < 1)
