@@ -375,7 +375,7 @@ namespace IngameScript
             sprite = MySprite.CreateSprite("Textures\\FactionLogo\\Others\\OtherIcon_33.dds", new Vector2(x_Left, y6), new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2));
             frame.Add(sprite);
             CalculateJumpDrives(out percentage_String, out finalValue_String);
-            PanelWriteText(frame, batteries.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 5, 0.55f, TextAlignment.RIGHT);
+            PanelWriteText(frame, jumpDrives.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 5, 0.55f, TextAlignment.RIGHT);
             ProgressBar(frame, x_Right, y6 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
             PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 5, 1.2f, TextAlignment.CENTER);
             PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 5 + itemBox_ColumnInterval_Float / 2, 1.2f, TextAlignment.CENTER);
