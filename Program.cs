@@ -57,7 +57,7 @@ namespace IngameScript
             , isPowerProducerSameConstructAsKey = "IsPowerProducerSameConstructAs", defaultIsPowerProducerSameConstructAsValue = "false"
             , isBatteryBlockSameConstructAsKey = "IsBatteryBlockSameConstructAs", defaultIsBatteryBlockSameConstructAsValue = "false"
             , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "false"
-            , isJumpDriveSameConstructAsKey = "IsReactorSameConstructAs", defaultIsJumpDriveSameConstructAsValue = "true";
+            , isJumpDriveSameConstructAsKey = "IsJumpDriveConstructAs", defaultIsJumpDriveSameConstructAsValue = "true";
 
 
         Color background_Color = new Color(0, 35, 45);
@@ -269,6 +269,7 @@ namespace IngameScript
                 _ini.Set(basicConfigSelection, isPowerProducerSameConstructAsKey, defaultIsPowerProducerSameConstructAsValue);
                 _ini.Set(basicConfigSelection, isBatteryBlockSameConstructAsKey, defaultIsBatteryBlockSameConstructAsValue);
                 _ini.Set(basicConfigSelection, isReactorSameConstructAsKey, defaultIsReactorSameConstructAsValue);
+                _ini.Set(basicConfigSelection, isJumpDriveSameConstructAsKey, defaultIsJumpDriveSameConstructAsValue);
 
                 _ini.Set(translateList_Section, length_Key, "1");
                 _ini.Set(translateList_Section, "1", "AH_BoreSight:More");
@@ -369,7 +370,16 @@ namespace IngameScript
             PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 4, 1.2f, TextAlignment.CENTER);
             PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 4 + itemBox_ColumnInterval_Float / 2, 1.2f, TextAlignment.CENTER);
 
-            
+            // JumpDrive
+            float y6 = y5 + itemBox_ColumnInterval_Float;
+            sprite = MySprite.CreateSprite("Textures\\FactionLogo\\Others\\OtherIcon_33.dds", new Vector2(x_Left, y6), new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2));
+            frame.Add(sprite);
+            CalculateJumpDrives(out percentage_String, out finalValue_String);
+            PanelWriteText(frame, batteries.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 5, 0.55f, TextAlignment.RIGHT);
+            ProgressBar(frame, x_Right, y6 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
+            PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 5, 1.2f, TextAlignment.CENTER);
+            PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 5 + itemBox_ColumnInterval_Float / 2, 1.2f, TextAlignment.CENTER);
+
         }
 
         public void ProgressBar(MySpriteDrawFrame frame, float x, float y, float width, float height, string ratio)
@@ -476,6 +486,19 @@ namespace IngameScript
 
             percentage_String = Math.Round(currentOutput / totalOutput * 100, 1).ToString() + "%";
             finalValue_String = AmountUnitConversion(currentOutput * 1000000) + " W / " + AmountUnitConversion(totalOutput * 1000000) + " W";
+        }
+
+        public void CalculateJumpDrives(out string percentage_String, out string finalValue_String)
+        {
+            double currentOutput = 0, totalOutput = 0;
+            foreach (var jumpDrive in jumpDrives)
+            {
+                currentOutput += jumpDrive.CurrentStoredPower;
+                totalOutput += jumpDrive.MaxStoredPower;
+            }
+
+            percentage_String = Math.Round(currentOutput / totalOutput * 100, 4).ToString() + "%";
+            finalValue_String = AmountUnitConversion(currentOutput * 1000000) + " Wh / " + AmountUnitConversion(totalOutput * 1000000) + " Wh";
         }
 
         //###############     Overall     ###############
