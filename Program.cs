@@ -8,6 +8,8 @@ using VRage.Game;
 using VRage.Game.ModAPI.Ingame.Utilities;
 using VRageMath;
 using System.Linq;
+using Sandbox.Game.Entities;
+using VRage;
 
 namespace IngameScript
 {
@@ -134,7 +136,7 @@ namespace IngameScript
             GetConfiguration_from_CustomData(basicConfigSelection, isRefinerySameConstructAsKey, out isRefinerySameConstructAsStr);
             bool isRefinerySameConstructAs = (isRefinerySameConstructAsStr == "true");
             GridTerminalSystem.GetBlocksOfType(refineries, b => !b.BlockDefinition.ToString().Contains("Shield") && (isRefinerySameConstructAs ? b.IsSameConstructAs(Me) : true));
-
+            
             string isPowerProducerSameConstructAsStr = defaultIsPowerProducerSameConstructAsValue;
             GetConfiguration_from_CustomData(basicConfigSelection, isPowerProducerSameConstructAsKey, out isPowerProducerSameConstructAsStr);
             bool isPowerProducerSameConstructAs = (isPowerProducerSameConstructAsStr == "true");
@@ -209,10 +211,15 @@ namespace IngameScript
 
         public void GetConfiguration_from_CustomData(string section, string key, out string value)
         {
+            GetConfiguration_from_CustomData(Me.CustomData, section, key, out value);
+        }
+
+        public void GetConfiguration_from_CustomData(string customData, string section, string key, out string value)
+        {
 
             // This time we _must_ check for failure since the user may have written invalid ini.
             MyIniParseResult result;
-            if (!_ini.TryParse(Me.CustomData, out result))
+            if (!_ini.TryParse(customData, out result))
                 throw new Exception(result.ToString());
 
             string DefaultValue = "";
@@ -1234,7 +1241,7 @@ namespace IngameScript
                     Bottles_to_Tanks("HydrogenBottle", hydrogenTanks);
                     break;
                 case 7:
-                    Assembler_to_CargoContainers();
+                    RefineriesAutoManager();
                     break;
                 case 8:
                     Bottles_to_Tanks("OxygenBottle", oxygenTanks);
@@ -1243,10 +1250,11 @@ namespace IngameScript
                     Assembler_to_CargoContainers();
                     break;
                 case 10:
-                    
+                    RefineriesAutoManager();
                     break;
             }
         }
+
 
         public void Assembler_to_CargoContainers()
         {
@@ -1428,6 +1436,76 @@ namespace IngameScript
 
         //###############     ManageInventory     ###############
 
+
+
+        //###############     Start RefineriesAutoManager     ###############
+
+        const string InputItemListSelection = "InputItemList";
+        MyIni _refineryIni = new MyIni();
+
+        /// <summary>
+        /// 精炼厂自动管理：定义精炼入料列表
+        /// </summary>
+        public void RefineriesAutoManager()
+        {
+            Echo("RefineriesAutoManager");
+            foreach (var refinery in refineries)
+            {
+                RefineryAutoManager(refinery);
+            }
+        }
+
+        public void RefineryAutoManager(IMyRefinery refinery)
+        {
+            string customData = refinery.CustomData;
+
+            // This time we _must_ check for failure since the user may have written invalid ini.
+            _refineryIni.Clear();
+            MyIniParseResult result;
+            if (!_refineryIni.TryParse(customData, out result))
+                throw new Exception(result.ToString());
+
+            // 关闭耗尽
+            if (refinery.UseConveyorSystem) refinery.UseConveyorSystem = false;
+
+            long residualVolume = refinery.InputInventory.MaxVolume.RawValue - refinery.InputInventory.CurrentVolume.RawValue;
+
+            foreach (var cargo in cargoContainers) {
+                List<MyInventoryItem> items = new List<MyInventoryItem>();
+                cargo.GetInventory().GetItems(items);
+                foreach (var item in items)
+                {
+                    string typeStr = item.Type.ToString();
+                    string key = typeStr.Replace('/', '_');
+                    string chTypeStr = TranslateName(typeStr);
+
+                    if (!cargo.GetInventory().CanTransferItemTo(refinery.InputInventory, item.Type)) continue;
+                    if (!typeStr.StartsWith("MyObjectBuilder_Ore")) continue;
+
+                    if (!_refineryIni.ContainsKey(InputItemListSelection, key)) _refineryIni.Set(InputItemListSelection, key, chTypeStr + ":" + Math.Min(10000, residualVolume).ToString());
+
+                    var strs = _refineryIni.Get(InputItemListSelection, key).ToString().Split(':');
+                    var defineValue = long.Parse(strs[1]);
+                    if (defineValue <= 0) continue;
+                    var rItem = refinery.InputInventory.FindItem(item.Type);
+                    long rItemAmount = 0;
+                    if (rItem.HasValue) rItemAmount = rItem.Value.Amount.RawValue;
+                    if (rItemAmount >= defineValue) continue;
+
+                    long addAmount = defineValue - rItemAmount;
+
+                    addAmount = Math.Min(addAmount, residualVolume);
+                    addAmount = Math.Min(addAmount, item.Amount.RawValue);
+
+                    refinery.InputInventory.TransferItemFrom(cargo.GetInventory(), item, MyFixedPoint.DeserializeStringSafe(addAmount.ToString()));
+                }
+
+            }
+
+            refinery.CustomData = _refineryIni.ToString();
+        }
+
+        //###############     End RefineriesAutoManager     ###############
 
         public void ProgrammableBlockScreen()
         {
