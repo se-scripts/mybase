@@ -124,55 +124,7 @@ namespace IngameScript
 
             BuildTranslateDic();
 
-            string isCargoSameConstructAsStr = defaultIsCargoSameConstructAsValue;
-            GetConfiguration_from_CustomData(basicConfigSelection, isCargoSameConstructAsKey, out isCargoSameConstructAsStr);
-            bool isCargoSameConstructAs = (isCargoSameConstructAsStr == "true");
-            GridTerminalSystem.GetBlocksOfType(cargoContainers, b => (isCargoSameConstructAs ? b.IsSameConstructAs(Me) : true)); 
-
-            GridTerminalSystem.GetBlocksOfType(panels, b => b.IsSameConstructAs(Me));
-            GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
-            GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Items_Ore, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ore_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Items_Ingot, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ingot_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Items_Component, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Component_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Items_AmmoMagazine, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_AmmoMagazine_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Assemblers, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Assembler_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(panels_Refineries, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Refinery_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(oxygenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Hydrogen") && !b.DefinitionDisplayNameText.ToString().Contains("氢气"));
-            GridTerminalSystem.GetBlocksOfType(hydrogenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Oxygen") && !b.DefinitionDisplayNameText.ToString().Contains("氧气"));
-
-            string isAssemblerSameConstructAsStr = defaultIsAssemblerSameConstructAsValue;
-            GetConfiguration_from_CustomData(basicConfigSelection, isAssemblerSameConstructAsKey, out isAssemblerSameConstructAsStr);
-            bool isAssemblerSameConstructAs = (isAssemblerSameConstructAsStr == "true");
-            GridTerminalSystem.GetBlocksOfType(assemblers, b => (isAssemblerSameConstructAs ? b.IsSameConstructAs(Me) : true));
-
-            string isRefinerySameConstructAsStr = defaultIsRefinerySameConstructAsValue;
-            GetConfiguration_from_CustomData(basicConfigSelection, isRefinerySameConstructAsKey, out isRefinerySameConstructAsStr);
-            bool isRefinerySameConstructAs = (isRefinerySameConstructAsStr == "true");
-            GridTerminalSystem.GetBlocksOfType(refineries, b => !b.BlockDefinition.ToString().Contains("Shield") && (isRefinerySameConstructAs ? b.IsSameConstructAs(Me) : true));
-            
-            string isPowerProducerSameConstructAsStr = defaultIsPowerProducerSameConstructAsValue;
-            GetConfiguration_from_CustomData(basicConfigSelection, isPowerProducerSameConstructAsKey, out isPowerProducerSameConstructAsStr);
-            bool isPowerProducerSameConstructAs = (isPowerProducerSameConstructAsStr == "true");
-            GridTerminalSystem.GetBlocksOfType(powerProducers, b => (isPowerProducerSameConstructAs ? b.IsSameConstructAs(Me) : true));
-
-            string isBatteryBlockSameConstructAsStr = defaultIsBatteryBlockSameConstructAsValue;
-            GetConfiguration_from_CustomData(basicConfigSelection, isBatteryBlockSameConstructAsKey, out isBatteryBlockSameConstructAsStr);
-            bool isBatteryBlockSameConstructAs = (isBatteryBlockSameConstructAsStr == "true");
-            GridTerminalSystem.GetBlocksOfType(batteries, b => (isBatteryBlockSameConstructAs ? b.IsSameConstructAs(Me) : true));
-
-            string isReactorSameConstructAsStr = defaultIsReactorSameConstructAsValue;
-            GetConfiguration_from_CustomData(basicConfigSelection, isReactorSameConstructAsKey, out isReactorSameConstructAsStr);
-            bool isReactorSameConstructAs = (isReactorSameConstructAsStr == "true");
-            GridTerminalSystem.GetBlocksOfType(reactors, b => (isReactorSameConstructAs ? b.IsSameConstructAs(Me) : true));
-
-            GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
-
-            string isJumpDriveSameConstructAsStr = defaultIsJumpDriveSameConstructAsValue;
-            GetConfiguration_from_CustomData(basicConfigSelection, isJumpDriveSameConstructAsKey, out isJumpDriveSameConstructAsStr);
-            bool isJumpDriveSameConstructAs = (isJumpDriveSameConstructAsStr=="true");
-            GridTerminalSystem.GetBlocksOfType(jumpDrives, b => (isJumpDriveSameConstructAs ? b.IsSameConstructAs(Me) : true));
-
+            GetBlocksFromGridTerminalSystem();
 
             //  incase no screen
             if (panels.Count < 1)
@@ -563,6 +515,57 @@ namespace IngameScript
 
                 translator.Add(result[0], result[1]);
             }
+        }
+
+        public void GetBlocksFromGridTerminalSystem() {
+            string isCargoSameConstructAsStr = defaultIsCargoSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isCargoSameConstructAsKey, out isCargoSameConstructAsStr);
+            bool isCargoSameConstructAs = (isCargoSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(cargoContainers, b => (isCargoSameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            GridTerminalSystem.GetBlocksOfType(panels, b => b.IsSameConstructAs(Me));
+            GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
+            GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Items_Ore, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ore_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Items_Ingot, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ingot_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Items_Component, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Component_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Items_AmmoMagazine, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_AmmoMagazine_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Assemblers, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Assembler_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Refineries, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Refinery_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(oxygenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Hydrogen") && !b.DefinitionDisplayNameText.ToString().Contains("氢气"));
+            GridTerminalSystem.GetBlocksOfType(hydrogenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Oxygen") && !b.DefinitionDisplayNameText.ToString().Contains("氧气"));
+
+            string isAssemblerSameConstructAsStr = defaultIsAssemblerSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isAssemblerSameConstructAsKey, out isAssemblerSameConstructAsStr);
+            bool isAssemblerSameConstructAs = (isAssemblerSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(assemblers, b => (isAssemblerSameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            string isRefinerySameConstructAsStr = defaultIsRefinerySameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isRefinerySameConstructAsKey, out isRefinerySameConstructAsStr);
+            bool isRefinerySameConstructAs = (isRefinerySameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(refineries, b => !b.BlockDefinition.ToString().Contains("Shield") && (isRefinerySameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            string isPowerProducerSameConstructAsStr = defaultIsPowerProducerSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isPowerProducerSameConstructAsKey, out isPowerProducerSameConstructAsStr);
+            bool isPowerProducerSameConstructAs = (isPowerProducerSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(powerProducers, b => (isPowerProducerSameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            string isBatteryBlockSameConstructAsStr = defaultIsBatteryBlockSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isBatteryBlockSameConstructAsKey, out isBatteryBlockSameConstructAsStr);
+            bool isBatteryBlockSameConstructAs = (isBatteryBlockSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(batteries, b => (isBatteryBlockSameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            string isReactorSameConstructAsStr = defaultIsReactorSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isReactorSameConstructAsKey, out isReactorSameConstructAsStr);
+            bool isReactorSameConstructAs = (isReactorSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(reactors, b => (isReactorSameConstructAs ? b.IsSameConstructAs(Me) : true));
+
+            GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
+
+            string isJumpDriveSameConstructAsStr = defaultIsJumpDriveSameConstructAsValue;
+            GetConfiguration_from_CustomData(basicConfigSelection, isJumpDriveSameConstructAsKey, out isJumpDriveSameConstructAsStr);
+            bool isJumpDriveSameConstructAs = (isJumpDriveSameConstructAsStr == "true");
+            GridTerminalSystem.GetBlocksOfType(jumpDrives, b => (isJumpDriveSameConstructAs ? b.IsSameConstructAs(Me) : true));
         }
 
         public void GetAllItems()
