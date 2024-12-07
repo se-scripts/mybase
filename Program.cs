@@ -44,7 +44,6 @@ namespace IngameScript
         List<IMyAssembler> assemblers = new List<IMyAssembler>();
         List<IMyRefinery> refineries = new List<IMyRefinery>();
         List<IMyPowerProducer> powerProducers = new List<IMyPowerProducer>();
-        List<IMyBatteryBlock> batteries = new List<IMyBatteryBlock>();
         List<IMyReactor> reactors = new List<IMyReactor>();
         List<IMyGasGenerator> gasGenerators = new List<IMyGasGenerator>();
         List<IMyJumpDrive> jumpDrives = new List<IMyJumpDrive>();
@@ -66,10 +65,10 @@ namespace IngameScript
             , isAssemblerSameConstructAsKey = "IsAssemblerSameConstructAs", defaultIsAssemblerSameConstructAsValue = "false"
             , isRefinerySameConstructAsKey = "IsRefinerySameConstructAs", defaultIsRefinerySameConstructAsValue = "false"
             , isPowerProducerSameConstructAsKey = "IsPowerProducerSameConstructAs", defaultIsPowerProducerSameConstructAsValue = "false"
-            , isBatteryBlockSameConstructAsKey = "IsBatteryBlockSameConstructAs", defaultIsBatteryBlockSameConstructAsValue = "false"
             , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "false"
             , isJumpDriveSameConstructAsKey = "IsJumpDriveConstructAs", defaultIsJumpDriveSameConstructAsValue = "true";
         const string gpsSelection = "GPS", enableGpsRecord = "enableGpsRecord", defaultEnableGpsRecord = "false";
+        const string overallConfigSeletion = "OverallConfig", displayAssemblerCustomName = "DisplayAssemblerName";
 
 
         Color background_Color = new Color(0, 35, 45);
@@ -267,11 +266,12 @@ namespace IngameScript
                 _ini.Set(basicConfigSelection, isAssemblerSameConstructAsKey, defaultIsAssemblerSameConstructAsValue);
                 _ini.Set(basicConfigSelection, isRefinerySameConstructAsKey, defaultIsRefinerySameConstructAsValue);
                 _ini.Set(basicConfigSelection, isPowerProducerSameConstructAsKey, defaultIsPowerProducerSameConstructAsValue);
-                _ini.Set(basicConfigSelection, isBatteryBlockSameConstructAsKey, defaultIsBatteryBlockSameConstructAsValue);
                 _ini.Set(basicConfigSelection, isReactorSameConstructAsKey, defaultIsReactorSameConstructAsValue);
                 _ini.Set(basicConfigSelection, isJumpDriveSameConstructAsKey, defaultIsJumpDriveSameConstructAsValue);
 
                 _ini.Set(gpsSelection, enableGpsRecord, defaultEnableGpsRecord);
+                _ini.Set(overallConfigSeletion, displayAssemblerCustomName, "");
+
 
                 _ini.Set(translateList_Section, length_Key, "1");
                 _ini.Set(translateList_Section, "1", "AH_BoreSight:More");
@@ -362,14 +362,15 @@ namespace IngameScript
             PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 3, 1.2f, TextAlignment.CENTER);
             PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 3 + itemBox_ColumnInterval_Float / 2, 1.2f, TextAlignment.CENTER);
 
-            // Battery
+            // 特殊生产设备的生产进度
             float y5 = y4 + itemBox_ColumnInterval_Float;
-            sprite = MySprite.CreateSprite("MyObjectBuilder_Component/PowerCell", new Vector2(x_Left, y5), new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2));
+            sprite = MySprite.CreateSprite("Textures\\FactionLogo\\Builders\\BuilderIcon_16.dds", new Vector2(x_Left, y5), new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2));
             frame.Add(sprite);
-            CalculateBatteries(out percentage_String, out finalValue_String);
-            PanelWriteText(frame, batteries.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 4, 0.55f, TextAlignment.RIGHT);
+            string itemName;
+            CalculateSpProducerProgress(out itemName, out percentage_String, out finalValue_String);
+            PanelWriteText(frame, "", x_Title, y_Title + itemBox_ColumnInterval_Float * 4, 0.55f, TextAlignment.RIGHT);
             ProgressBar(frame, x_Right, y5 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
-            PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 4, 1.2f, TextAlignment.CENTER);
+            PanelWriteText(frame, itemName, x_Right, y_Title + itemBox_ColumnInterval_Float * 4, 1.2f, TextAlignment.CENTER);
             PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 4 + itemBox_ColumnInterval_Float / 2, 1.2f, TextAlignment.CENTER);
 
             // JumpDrive
@@ -477,18 +478,27 @@ namespace IngameScript
         }
 
 
-        public void CalculateBatteries(out string percentage_String, out string finalValue_String)
+        public void CalculateSpProducerProgress(out string producer_Name, out string percentage_String, out string finalValue_String)
         {
-            double currentOutput = 0, totalOutput = 0;
-            foreach (var battery in batteries)
+            producer_Name = "";
+            percentage_String = 0 + "%";
+            finalValue_String = 0 + " % / " + 100 + " W";
+            GetConfiguration_from_CustomData(overallConfigSeletion, displayAssemblerCustomName, out producer_Name);
+            if (producer_Name != "")
             {
-                currentOutput += battery.CurrentStoredPower;
-                totalOutput += battery.MaxStoredPower;
+                string name = producer_Name;
+                List<IMyAssembler> asses = assemblers.Where((ass) => ass.CustomName.Contains(name)).ToList();
+                if (asses.Count > 0)
+                {
+                    IMyAssembler ass = asses[0];
+                    producer_Name = ass.CustomName;
+                    percentage_String = Math.Round(ass.CurrentProgress * 100, 4) + "%";
+                    finalValue_String = Math.Round(ass.CurrentProgress * 100, 4) + " / 100%";
+                }
             }
-
-            percentage_String = Math.Round(currentOutput / totalOutput * 100, 1).ToString() + "%";
-            finalValue_String = AmountUnitConversion(currentOutput * 1000000) + " W / " + AmountUnitConversion(totalOutput * 1000000) + " W";
         }
+
+
 
         public void CalculateJumpDrives(out string percentage_String, out string finalValue_String)
         {
@@ -587,11 +597,6 @@ namespace IngameScript
             GetConfiguration_from_CustomData(basicConfigSelection, isPowerProducerSameConstructAsKey, out isPowerProducerSameConstructAsStr);
             bool isPowerProducerSameConstructAs = (isPowerProducerSameConstructAsStr == "true");
             GridTerminalSystem.GetBlocksOfType(powerProducers, b => (isPowerProducerSameConstructAs ? b.IsSameConstructAs(Me) : true));
-
-            string isBatteryBlockSameConstructAsStr = defaultIsBatteryBlockSameConstructAsValue;
-            GetConfiguration_from_CustomData(basicConfigSelection, isBatteryBlockSameConstructAsKey, out isBatteryBlockSameConstructAsStr);
-            bool isBatteryBlockSameConstructAs = (isBatteryBlockSameConstructAsStr == "true");
-            GridTerminalSystem.GetBlocksOfType(batteries, b => (isBatteryBlockSameConstructAs ? b.IsSameConstructAs(Me) : true));
 
             string isReactorSameConstructAsStr = defaultIsReactorSameConstructAsValue;
             GetConfiguration_from_CustomData(basicConfigSelection, isReactorSameConstructAsKey, out isReactorSameConstructAsStr);
