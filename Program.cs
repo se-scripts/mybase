@@ -69,6 +69,7 @@ namespace IngameScript
             , isBatteryBlockSameConstructAsKey = "IsBatteryBlockSameConstructAs", defaultIsBatteryBlockSameConstructAsValue = "false"
             , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "false"
             , isJumpDriveSameConstructAsKey = "IsJumpDriveConstructAs", defaultIsJumpDriveSameConstructAsValue = "true";
+        const string gpsSelection = "GPS", enableGpsRecord = "enableGpsRecord", defaultEnableGpsRecord = "false";
 
 
         Color background_Color = new Color(0, 35, 45);
@@ -139,6 +140,42 @@ namespace IngameScript
             }
 
             foreach (var assembler in assemblers) assembler.CustomData = "0";
+
+
+            string enableGpsRecord = defaultEnableGpsRecord;
+            GetConfiguration_from_CustomData(gpsSelection, enableGpsRecord, out enableGpsRecord);
+            if (enableGpsRecord == "true") {
+                /// 获取GPS
+                StringBuilder sb = new StringBuilder();
+                sb.Append("GPS:");
+                sb.Append(Me.CustomName.ToString());
+                sb.Append(":");
+                sb.Append(Me.GetPosition().X.ToString());
+                sb.Append(":");
+                sb.Append(Me.GetPosition().Y.ToString());
+                sb.Append(":");
+                sb.Append(Me.GetPosition().Z.ToString());
+                sb.Append(":");
+                DebugLCD(sb.ToString());
+                WriteConfiguration_to_CustomData(gpsSelection, Me.EntityId.ToString(), sb.ToString());
+                sb.Clear();
+                foreach (var cargo in cargoContainers)
+                {
+                    sb.Clear();
+                    sb.Append("GPS:");
+                    sb.Append(cargo.CustomName.ToString());
+                    sb.Append(":");
+                    sb.Append(cargo.GetPosition().X.ToString());
+                    sb.Append(":");
+                    sb.Append(cargo.GetPosition().Y.ToString());
+                    sb.Append(":");
+                    sb.Append(cargo.GetPosition().Z.ToString());
+                    sb.Append(":");
+                    string gps = sb.ToString();
+                    WriteConfiguration_to_CustomData(gpsSelection, cargo.EntityId.ToString(), sb.ToString());
+                }
+
+            }
 
         }
 
@@ -233,6 +270,8 @@ namespace IngameScript
                 _ini.Set(basicConfigSelection, isBatteryBlockSameConstructAsKey, defaultIsBatteryBlockSameConstructAsValue);
                 _ini.Set(basicConfigSelection, isReactorSameConstructAsKey, defaultIsReactorSameConstructAsValue);
                 _ini.Set(basicConfigSelection, isJumpDriveSameConstructAsKey, defaultIsJumpDriveSameConstructAsValue);
+
+                _ini.Set(gpsSelection, enableGpsRecord, defaultEnableGpsRecord);
 
                 _ini.Set(translateList_Section, length_Key, "1");
                 _ini.Set(translateList_Section, "1", "AH_BoreSight:More");
@@ -1577,7 +1616,7 @@ namespace IngameScript
         {
             Echo($"{DateTime.Now}");
             Echo("Program is running.");
-
+            
             if (counter_ProgramRefresh != 1 || counter_ProgramRefresh != 6 || counter_ProgramRefresh != 11 || counter_ProgramRefresh != 16)
             {
                 if (counter_Logo++ >= 360) counter_Logo = 0;
