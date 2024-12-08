@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Text;
 using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI.Ingame;
-using VRage.Game;
 using VRage.Game.ModAPI.Ingame.Utilities;
 using VRageMath;
 using System.Linq;
-using Sandbox.Game.Entities;
 using VRage;
+using System.Drawing;
+using Color = VRageMath.Color;
 
 namespace IngameScript
 {
@@ -85,16 +85,6 @@ namespace IngameScript
         ItemList[] itemList_Component;
         ItemList[] itemList_AmmoMagazine;
 
-
-        public struct ComparisonTable
-        {
-            public string Name;
-            public string BluePrintName;
-            public double Amount;
-            public bool HasItem;
-        }
-
-        ComparisonTable[] ComparisonTable_AutoProduction;
 
         public struct Facility_Struct
         {
@@ -283,7 +273,7 @@ namespace IngameScript
 
 
         /*###############     Overall     ###############*/
-                public void OverallDisplay()
+        public void OverallDisplay()
         {
             foreach (var panel in panels_Overall)
             {
@@ -401,41 +391,41 @@ namespace IngameScript
 
         public void DrawLogo(MySpriteDrawFrame frame, float x, float y, float width)
         {
-            MySprite sprite = new MySprite()
-            {
-                Type = SpriteType.TEXTURE,
-                Data = "Screen_LoadingBar",
-                Position = new Vector2(x, y),
-                Size = new Vector2(width - 6, width - 6),
-                RotationOrScale = Convert.ToSingle(counter_Logo / 360 * 2 * Math.PI),
-                Alignment = TextAlignment.CENTER,
-            };
-            frame.Add(sprite);
+                MySprite sprite = new MySprite()
+                {
+                    Type = SpriteType.TEXTURE,
+                    Data = "Screen_LoadingBar",
+                    Position = new Vector2(x, y),
+                    Size = new Vector2(width - 6, width - 6),
+                    RotationOrScale = Convert.ToSingle(counter_Logo / 360 * 2 * Math.PI),
+                    Alignment = TextAlignment.CENTER,
+                };
+                frame.Add(sprite);
 
-            sprite = new MySprite()
-            {
-                Type = SpriteType.TEXTURE,
-                Data = "Screen_LoadingBar",
-                Position = new Vector2(x, y),
-                Size = new Vector2(width / 2, width / 2),
-                RotationOrScale = Convert.ToSingle(2 * Math.PI - counter_Logo / 360 * 2 * Math.PI),
-                Alignment = TextAlignment.CENTER,
-            };
-            frame.Add(sprite);
+                sprite = new MySprite()
+                {
+                    Type = SpriteType.TEXTURE,
+                    Data = "Screen_LoadingBar",
+                    Position = new Vector2(x, y),
+                    Size = new Vector2(width / 2, width / 2),
+                    RotationOrScale = Convert.ToSingle(2 * Math.PI - counter_Logo / 360 * 2 * Math.PI),
+                    Alignment = TextAlignment.CENTER,
+                };
+                frame.Add(sprite);
 
-            sprite = new MySprite()
-            {
-                Type = SpriteType.TEXTURE,
-                Data = "Screen_LoadingBar",
-                Position = new Vector2(x, y),
-                Size = new Vector2(width / 4, width / 4),
-                RotationOrScale = Convert.ToSingle(Math.PI + counter_Logo / 360 * 2 * Math.PI),
-                Alignment = TextAlignment.CENTER,
-            };
-            frame.Add(sprite);
+                sprite = new MySprite()
+                {
+                    Type = SpriteType.TEXTURE,
+                    Data = "Screen_LoadingBar",
+                    Position = new Vector2(x, y),
+                    Size = new Vector2(width / 4, width / 4),
+                    RotationOrScale = Convert.ToSingle(Math.PI + counter_Logo / 360 * 2 * Math.PI),
+                    Alignment = TextAlignment.CENTER,
+                };
+                frame.Add(sprite);
 
-        }
-
+            }
+            
         public void CalculateAll(out string percentage_String, out string finalValue_String)
         {
             double currentVolume_Double = 0, totalVolume_Double = 0;
@@ -1621,35 +1611,35 @@ namespace IngameScript
         {
             Echo($"{DateTime.Now}");
             Echo("Program is running.");
-            
-            if (counter_ProgramRefresh != 1 || counter_ProgramRefresh != 6 || counter_ProgramRefresh != 11 || counter_ProgramRefresh != 16)
-            {
-                if (counter_Logo++ >= 360) counter_Logo = 0;
 
-                ProgrammableBlockScreen();
+                if (counter_ProgramRefresh != 1 || counter_ProgramRefresh != 6 || counter_ProgramRefresh != 11 || counter_ProgramRefresh != 16)
+                {
+                    if (counter_Logo++ >= 360) counter_Logo = 0;
 
-                OverallDisplay();
-            }
+                    ProgrammableBlockScreen();
 
-            if (counter_ProgramRefresh++ >= 21) counter_ProgramRefresh = 0;
+                    OverallDisplay();
+                }
 
-            switch (counter_ProgramRefresh)
-            {
-                case 1:
-                    Echo("ShowItems");
-                    ShowItems();
-                    break;
-                case 6:
-                    Echo("ShowFacilities");
-                    ShowFacilities();
-                    break;
-                case 11:
-                    Echo("ManageInventory");
-                    ManageInventory();
-                    break;
-                case 16:
-                    break;
-            }
+                if (counter_ProgramRefresh++ >= 21) counter_ProgramRefresh = 0;
+
+                switch (counter_ProgramRefresh)
+                {
+                    case 1:
+                        Echo("ShowItems");
+                        ShowItems();
+                        break;
+                    case 6:
+                        Echo("ShowFacilities");
+                        ShowFacilities();
+                        break;
+                    case 11:
+                        Echo("ManageInventory");
+                        ManageInventory();
+                        break;
+                    case 16:
+                        break;
+                }
 
 
 
