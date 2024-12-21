@@ -61,10 +61,10 @@ namespace IngameScript
         const string icetoUranium_Section = "Ice_To_Uranium", buttonOn_Key = "Button_On";
         const string basicConfigSelection = "BasicConfig"
             , isCargoSameConstructAsKey = "IsCargoSameConstructAs", defaultIsCargoSameConstructAsValue = "true"
-            , isAssemblerSameConstructAsKey = "IsAssemblerSameConstructAs", defaultIsAssemblerSameConstructAsValue = "false"
-            , isRefinerySameConstructAsKey = "IsRefinerySameConstructAs", defaultIsRefinerySameConstructAsValue = "false"
-            , isPowerProducerSameConstructAsKey = "IsPowerProducerSameConstructAs", defaultIsPowerProducerSameConstructAsValue = "false"
-            , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "false";
+            , isAssemblerSameConstructAsKey = "IsAssemblerSameConstructAs", defaultIsAssemblerSameConstructAsValue = "true"
+            , isRefinerySameConstructAsKey = "IsRefinerySameConstructAs", defaultIsRefinerySameConstructAsValue = "true"
+            , isPowerProducerSameConstructAsKey = "IsPowerProducerSameConstructAs", defaultIsPowerProducerSameConstructAsValue = "true"
+            , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "true";
         const string gpsSelection = "GPS", enableGpsRecord = "enableGpsRecord", defaultEnableGpsRecord = "false";
         const string overallConfigSeletion = "OverallConfig", displayAssemblerCustomName = "DisplayAssemblerName";
 
