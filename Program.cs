@@ -46,7 +46,6 @@ namespace IngameScript
         List<IMyPowerProducer> powerProducers = new List<IMyPowerProducer>();
         List<IMyReactor> reactors = new List<IMyReactor>();
         List<IMyGasGenerator> gasGenerators = new List<IMyGasGenerator>();
-        List<IMyJumpDrive> jumpDrives = new List<IMyJumpDrive>();
         List<string> spritesList = new List<string>();
 
 
@@ -65,8 +64,7 @@ namespace IngameScript
             , isAssemblerSameConstructAsKey = "IsAssemblerSameConstructAs", defaultIsAssemblerSameConstructAsValue = "false"
             , isRefinerySameConstructAsKey = "IsRefinerySameConstructAs", defaultIsRefinerySameConstructAsValue = "false"
             , isPowerProducerSameConstructAsKey = "IsPowerProducerSameConstructAs", defaultIsPowerProducerSameConstructAsValue = "false"
-            , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "false"
-            , isJumpDriveSameConstructAsKey = "IsJumpDriveConstructAs", defaultIsJumpDriveSameConstructAsValue = "true";
+            , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "false";
         const string gpsSelection = "GPS", enableGpsRecord = "enableGpsRecord", defaultEnableGpsRecord = "false";
         const string overallConfigSeletion = "OverallConfig", displayAssemblerCustomName = "DisplayAssemblerName";
 
@@ -257,7 +255,6 @@ namespace IngameScript
                 _ini.Set(basicConfigSelection, isRefinerySameConstructAsKey, defaultIsRefinerySameConstructAsValue);
                 _ini.Set(basicConfigSelection, isPowerProducerSameConstructAsKey, defaultIsPowerProducerSameConstructAsValue);
                 _ini.Set(basicConfigSelection, isReactorSameConstructAsKey, defaultIsReactorSameConstructAsValue);
-                _ini.Set(basicConfigSelection, isJumpDriveSameConstructAsKey, defaultIsJumpDriveSameConstructAsValue);
 
                 _ini.Set(gpsSelection, enableGpsRecord, defaultEnableGpsRecord);
                 _ini.Set(overallConfigSeletion, displayAssemblerCustomName, "");
@@ -363,15 +360,6 @@ namespace IngameScript
             PanelWriteText(frame, itemName, x_Right, y_Title + itemBox_ColumnInterval_Float * 4, 1.2f, TextAlignment.CENTER);
             PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 4 + itemBox_ColumnInterval_Float / 2, 1.2f, TextAlignment.CENTER);
 
-            // JumpDrive
-            float y6 = y5 + itemBox_ColumnInterval_Float;
-            sprite = MySprite.CreateSprite("Textures\\FactionLogo\\Others\\OtherIcon_33.dds", new Vector2(x_Left, y6), new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2));
-            frame.Add(sprite);
-            CalculateJumpDrives(out percentage_String, out finalValue_String);
-            PanelWriteText(frame, jumpDrives.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 5, 0.55f, TextAlignment.RIGHT);
-            ProgressBar(frame, x_Right, y6 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
-            PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 5, 1.2f, TextAlignment.CENTER);
-            PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 5 + itemBox_ColumnInterval_Float / 2, 1.2f, TextAlignment.CENTER);
 
         }
 
@@ -490,18 +478,6 @@ namespace IngameScript
 
 
 
-        public void CalculateJumpDrives(out string percentage_String, out string finalValue_String)
-        {
-            double currentOutput = 0, totalOutput = 0;
-            foreach (var jumpDrive in jumpDrives)
-            {
-                currentOutput += jumpDrive.CurrentStoredPower;
-                totalOutput += jumpDrive.MaxStoredPower;
-            }
-
-            percentage_String = Math.Round(currentOutput / totalOutput * 100, 4).ToString() + "%";
-            finalValue_String = AmountUnitConversion(currentOutput * 1000000) + " Wh / " + AmountUnitConversion(totalOutput * 1000000) + " Wh";
-        }
 
         //###############     Overall     ###############
 
@@ -595,10 +571,6 @@ namespace IngameScript
 
             GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
 
-            string isJumpDriveSameConstructAsStr = defaultIsJumpDriveSameConstructAsValue;
-            GetConfiguration_from_CustomData(basicConfigSelection, isJumpDriveSameConstructAsKey, out isJumpDriveSameConstructAsStr);
-            bool isJumpDriveSameConstructAs = (isJumpDriveSameConstructAsStr == "true");
-            GridTerminalSystem.GetBlocksOfType(jumpDrives, b => (isJumpDriveSameConstructAs ? b.IsSameConstructAs(Me) : true));
         }
 
         public void GetAllItems()
