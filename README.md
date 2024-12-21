@@ -40,6 +40,8 @@
 
 # 如何使用
 
+视频演示：<https://www.bilibili.com/video/BV1AQktYcEuT/>
+
 进这个网址 [Program.cs](Program.cs)
 
 复制代码到SE的编程块里
