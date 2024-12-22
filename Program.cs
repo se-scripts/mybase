@@ -1333,6 +1333,7 @@ namespace IngameScript
                     {
                         foreach (var cargoContainer in cargoContainers)
                         {
+                            if (cargoContainer.DisplayNameText.Contains(CARGO_DISABLE_TAG)) continue;
                             List<MyInventoryItem> items1 = new List<MyInventoryItem>();
                             assemblers[assemblerCounter].InputInventory.GetItems(items1);
                             foreach (var item in items1)
@@ -1360,6 +1361,7 @@ namespace IngameScript
                         {
                             foreach (var cargoContainer in cargoContainers)
                             {
+                                if (cargoContainer.DisplayNameText.Contains(CARGO_DISABLE_TAG)) continue;
                                 List<MyInventoryItem> items3 = new List<MyInventoryItem>();
                                 assembler.OutputInventory.GetItems(items3);
                                 foreach (var item in items3)
@@ -1396,6 +1398,7 @@ namespace IngameScript
                     {
                         foreach (var cargoContainer in cargoContainers)
                         {
+                            if (cargoContainer.DisplayNameText.Contains(CARGO_DISABLE_TAG)) continue;
                             List<MyInventoryItem> items1 = new List<MyInventoryItem>();
                             refineries[refineryCounter].InputInventory.GetItems(items1);
                             foreach (var item in items1)
@@ -1421,6 +1424,7 @@ namespace IngameScript
                     {
                         foreach (var cargoContainer in cargoContainers)
                         {
+                            if (cargoContainer.DisplayNameText.Contains(CARGO_DISABLE_TAG)) continue;
                             //List<MyInventoryItem> items1 = new List<MyInventoryItem>();
                             //refineries[refineryCounter].InputInventory.GetItems(items1);
                             //foreach (var item in items1)
@@ -1586,6 +1590,140 @@ namespace IngameScript
         }
 
 
+        //###############     Start CargoAutoManager     ###############
+
+        string cargoAutoManagerSelection = "CargoAutoManager", 
+            enableCargoAutoManagerKey = "enable", defaultEnableCargoAutoManager = "false";
+        // 存放矿物的货箱标签
+        string CARGO_ORE_TAG = "[矿物]";
+        // 存放锭的货箱标签
+        string CARGO_INGOT_TAG = "[矿锭]";
+        // 存放组件的货箱标签
+        string CARGO_COMPONENT_TAG = "[零件]";
+        // 存放工具的货箱标签
+        string CARGO_TOOL_TAG = "[工具]";
+        // 存放弹药的货箱标签
+        string CARGO_AMMO_TAG = "[弹药]";
+        // 不计入统计的货箱标签
+        string CARGO_DISABLE_TAG = "[禁止]";
+        string[] filterBlockNames = {
+            "MyObjectBuilder_OxygenGenerator",
+            "MyObjectBuilder_Reactor",
+            "MyObjectBuilder_LargeMissileTurret",
+            "MyObjectBuilder_LargeGatlingTurret",
+            "MyObjectBuilder_InteriorTurret",
+            "MyObjectBuilder_TurretControlBlock",
+            "MyObjectBuilder_OxygenTank"
+        };
+        string[] typeIdTools = {
+            "MyObjectBuilder_PhysicalGunObject",
+            "MyObjectBuilder_GasContainerObject",
+            "MyObjectBuilder_OxygenContainerObject"
+        };
+        /// <summary>
+        /// 箱子自动整理
+        /// </summary>
+        public void CargoAutoManager() {
+            List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
+            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, block => {
+                return block.HasInventory && !filterBlockNames.Contains(block.BlockDefinition.TypeIdString) && !block.DisplayNameText.Contains(CARGO_DISABLE_TAG);
+            });
+            Echo($"有效货箱数:{blocks.Count}");
+            //矿物箱子
+            var oreBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_ORE_TAG)).ToList();
+            //锭箱子
+            var ingotBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_INGOT_TAG)).ToList();
+            //组件箱子
+            var componentBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_COMPONENT_TAG)).ToList();
+            //工具箱子
+            var toolBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_TOOL_TAG)).ToList();
+            //弹药箱子
+            var ammoBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_AMMO_TAG)).ToList();
+
+            IEnumerable<String> oreBlockNameList = oreBlock.Select(d => d.Name);
+            IEnumerable<String> ingotBlockNameList = ingotBlock.Select(d => d.Name);
+            IEnumerable<String> componentBlockNameList = componentBlock.Select(d => d.Name);
+            IEnumerable<String> toolBlockNameList = toolBlock.Select(d => d.Name);
+            IEnumerable<String> ammoBlockNameList = ammoBlock.Select(d => d.Name);
+
+            foreach (IMyTerminalBlock block in blocks)
+            {
+                // Echo($"货箱:{block.DisplayNameText}");
+                IMyInventory currentInventory = null;
+                if (block.InventoryCount > 1)
+                {
+                    // 精炼机和组装机取输出容器
+                    currentInventory = block.GetInventory(1);
+                }
+                else
+                {
+                    // 普通方块取默认容器
+                    currentInventory = block.GetInventory();
+                }
+                if (currentInventory.CurrentVolume.RawValue <= 0L)
+                {
+                    continue;
+                }
+                List<MyInventoryItem> oreItems = getItem(block, oreBlockNameList, currentInventory, "MyObjectBuilder_Ore");
+                List<MyInventoryItem> ingotItems = getItem(block, ingotBlockNameList, currentInventory, "MyObjectBuilder_Ingot");
+                List<MyInventoryItem> componentItems = getItem(block, componentBlockNameList, currentInventory, "MyObjectBuilder_Component");
+                List<MyInventoryItem> toolItems = getItem(block, toolBlockNameList, currentInventory, null, typeIdTools);
+                List<MyInventoryItem> ammoItems = getItem(block, ammoBlockNameList, currentInventory, "MyObjectBuilder_AmmoMagazine");
+
+                TransferItem(oreItems, block, currentInventory, oreBlock);
+                TransferItem(ingotItems, block, currentInventory, ingotBlock);
+                TransferItem(componentItems, block, currentInventory, componentBlock);
+                TransferItem(toolItems, block, currentInventory, toolBlock);
+                TransferItem(ammoItems, block, currentInventory, ammoBlock);
+            }
+
+        }
+
+        // 获取物品
+        List<MyInventoryItem> getItem(IMyTerminalBlock block, IEnumerable<String> nameList, IMyInventory inventory, string typeId, string[] typeIds = null)
+        {
+            List<MyInventoryItem> list = new List<MyInventoryItem>();
+            if (!nameList.Contains(block.Name))
+            {
+                if (typeId != null)
+                {
+                    inventory.GetItems(list, d => d.Type.TypeId == typeId);
+                }
+                else
+                {
+                    inventory.GetItems(list, d => typeIds.Contains(d.Type.TypeId));
+                }
+            }
+            return list;
+        }
+
+        // 转移物品
+        void TransferItem(List<MyInventoryItem> items, IMyTerminalBlock fromBlock, IMyInventory currentInventory, List<IMyTerminalBlock> toBlocks)
+        {
+            if (items.Count == 0)
+            {
+                return;
+            }
+            foreach (IMyTerminalBlock toBlock in toBlocks)
+            {
+                if (toBlock.Name == fromBlock.Name)
+                {
+                    continue;
+                }
+                IMyInventory inventory = toBlock.GetInventory();
+                foreach (MyInventoryItem item in items)
+                {
+                    if (inventory.IsFull)
+                    {
+                        break;
+                    }
+                    currentInventory.TransferItemTo(inventory, item);
+                }
+            }
+        }
+
+
+        //###############     End CargoAutoManager     ###############
 
         public void Main(string argument, UpdateType updateSource)
         {
@@ -1621,6 +1759,11 @@ namespace IngameScript
                     break;
             }
 
+            if (!_ini.ContainsKey(cargoAutoManagerSelection, enableCargoAutoManagerKey)) {
+                _ini.Set(cargoAutoManagerSelection, enableCargoAutoManagerKey, defaultEnableCargoAutoManager);
+                Me.CustomData = _ini.ToString();
+            }
+            if (_ini.Get(cargoAutoManagerSelection, enableCargoAutoManagerKey).ToBoolean()) CargoAutoManager();
 
 
         }
