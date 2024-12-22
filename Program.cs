@@ -553,11 +553,13 @@ namespace IngameScript
             GetConfiguration_from_CustomData(basicConfigSelection, isAssemblerSameConstructAsKey, out isAssemblerSameConstructAsStr);
             bool isAssemblerSameConstructAs = (isAssemblerSameConstructAsStr == "true");
             GridTerminalSystem.GetBlocksOfType(assemblers, b => (isAssemblerSameConstructAs ? b.IsSameConstructAs(Me) : true));
+            assemblers = assemblers.OrderBy(e => e.CustomName).ToList();
 
             string isRefinerySameConstructAsStr = defaultIsRefinerySameConstructAsValue;
             GetConfiguration_from_CustomData(basicConfigSelection, isRefinerySameConstructAsKey, out isRefinerySameConstructAsStr);
             bool isRefinerySameConstructAs = (isRefinerySameConstructAsStr == "true");
             GridTerminalSystem.GetBlocksOfType(refineries, b => !b.BlockDefinition.ToString().Contains("Shield") && (isRefinerySameConstructAs ? b.IsSameConstructAs(Me) : true));
+            refineries = refineries.OrderBy(e => e.CustomName).ToList();
 
             string isPowerProducerSameConstructAsStr = defaultIsPowerProducerSameConstructAsValue;
             GetConfiguration_from_CustomData(basicConfigSelection, isPowerProducerSameConstructAsKey, out isPowerProducerSameConstructAsStr);
