@@ -1277,28 +1277,28 @@ namespace IngameScript
                     Assembler_to_CargoContainers();
                     break;
                 case 2:
-                    Refinery_to_CargoContainers();
+                    Assembler_to_CargoContainers();
                     break;
                 case 3:
-                    Assembler_to_CargoContainers();
+                    Refinery_to_CargoContainers();
                     break;
                 case 4:
-                    ShowProductionQueue();
+                    Refinery_to_CargoContainers();
                     break;
                 case 5:
-                    Assembler_to_CargoContainers();
+                    ShowProductionQueue();
                     break;
                 case 6:
                     Bottles_to_Tanks("HydrogenBottle", hydrogenTanks);
                     break;
                 case 7:
-                    RefineriesAutoManager();
-                    break;
-                case 8:
                     Bottles_to_Tanks("OxygenBottle", oxygenTanks);
                     break;
+                case 8:
+                    RefineriesAutoManager();
+                    break;
                 case 9:
-                    Assembler_to_CargoContainers();
+                    RefineriesAutoManager();
                     break;
                 case 10:
                     RefineriesAutoManager();
@@ -1540,13 +1540,13 @@ namespace IngameScript
                     if (defineValue <= 0) continue;
                     var rItem = refinery.InputInventory.FindItem(item.Type);
                     long rItemAmount = 0;
-                    if (rItem.HasValue) rItemAmount = rItem.Value.Amount.RawValue;
+                    if (rItem.HasValue) rItemAmount = rItem.Value.Amount.ToIntSafe();
                     if (rItemAmount >= defineValue) continue;
 
                     long addAmount = defineValue - rItemAmount;
 
                     addAmount = Math.Min(addAmount, residualVolume);
-                    addAmount = Math.Min(addAmount, item.Amount.RawValue);
+                    addAmount = Math.Min(addAmount, item.Amount.ToIntSafe());
 
                     refinery.InputInventory.TransferItemFrom(cargo.GetInventory(), item, MyFixedPoint.DeserializeStringSafe(addAmount.ToString()));
                 }
@@ -1584,34 +1584,34 @@ namespace IngameScript
             Echo($"{DateTime.Now}");
             Echo("Program is running.");
 
-                if (counter_ProgramRefresh != 1 || counter_ProgramRefresh != 6 || counter_ProgramRefresh != 11 || counter_ProgramRefresh != 16)
-                {
-                    if (counter_Logo++ >= 360) counter_Logo = 0;
+            if (counter_ProgramRefresh != 1 || counter_ProgramRefresh != 6 || counter_ProgramRefresh != 11 || counter_ProgramRefresh != 16)
+            {
+                if (counter_Logo++ >= 360) counter_Logo = 0;
 
-                    ProgrammableBlockScreen();
+                ProgrammableBlockScreen();
 
-                    OverallDisplay();
-                }
+                OverallDisplay();
+            }
 
-                if (counter_ProgramRefresh++ >= 21) counter_ProgramRefresh = 0;
+            if (counter_ProgramRefresh++ >= 21) counter_ProgramRefresh = 0;
 
-                switch (counter_ProgramRefresh)
-                {
-                    case 1:
-                        Echo("ShowItems");
-                        ShowItems();
-                        break;
-                    case 6:
-                        Echo("ShowFacilities");
-                        ShowFacilities();
-                        break;
-                    case 11:
-                        Echo("ManageInventory");
-                        ManageInventory();
-                        break;
-                    case 16:
-                        break;
-                }
+            switch (counter_ProgramRefresh)
+            {
+                case 1:
+                    Echo("ShowItems");
+                    ShowItems();
+                    break;
+                case 6:
+                    Echo("ShowFacilities");
+                    ShowFacilities();
+                    break;
+                case 11:
+                    Echo("ManageInventory");
+                    ManageInventory();
+                    break;
+                case 16:
+                    break;
+            }
 
 
 
