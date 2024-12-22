@@ -1624,6 +1624,14 @@ namespace IngameScript
         /// 箱子自动整理
         /// </summary>
         public void CargoAutoManager() {
+            if (!_ini.ContainsKey(cargoAutoManagerSelection, enableCargoAutoManagerKey))
+            {
+                _ini.Set(cargoAutoManagerSelection, enableCargoAutoManagerKey, defaultEnableCargoAutoManager);
+                Me.CustomData = _ini.ToString();
+            }
+            if (!_ini.Get(cargoAutoManagerSelection, enableCargoAutoManagerKey).ToBoolean()) return;
+
+
             List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, block => {
                 return block.HasInventory && !filterBlockNames.Contains(block.BlockDefinition.TypeIdString) && !block.DisplayNameText.Contains(CARGO_DISABLE_TAG);
@@ -1756,14 +1764,11 @@ namespace IngameScript
                     ManageInventory();
                     break;
                 case 16:
+                    Echo("CargoAutoManager");
+                    CargoAutoManager();
                     break;
             }
 
-            if (!_ini.ContainsKey(cargoAutoManagerSelection, enableCargoAutoManagerKey)) {
-                _ini.Set(cargoAutoManagerSelection, enableCargoAutoManagerKey, defaultEnableCargoAutoManager);
-                Me.CustomData = _ini.ToString();
-            }
-            if (_ini.Get(cargoAutoManagerSelection, enableCargoAutoManagerKey).ToBoolean()) CargoAutoManager();
 
 
         }
