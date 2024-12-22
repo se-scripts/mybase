@@ -1492,6 +1492,7 @@ namespace IngameScript
         //###############     Start RefineriesAutoManager     ###############
 
         const string InputItemListSelection = "InputItemList";
+        const string refineriesAutoManagerSelection = "RefineriesAutoManager", notAddWhenInputItemHasValue = "NotAddWhenInputItemHasValue", defaultNotAddWhenInputItemHasValue = "true";
         MyIni _refineryIni = new MyIni();
 
         /// <summary>
@@ -1516,6 +1517,8 @@ namespace IngameScript
             if (!_refineryIni.TryParse(customData, out result))
                 throw new Exception(result.ToString());
 
+            if (!_refineryIni.ContainsKey(refineriesAutoManagerSelection, notAddWhenInputItemHasValue)) _refineryIni.Set(refineriesAutoManagerSelection, notAddWhenInputItemHasValue, defaultNotAddWhenInputItemHasValue);
+
             // 关闭耗尽
             if (refinery.UseConveyorSystem) refinery.UseConveyorSystem = false;
 
@@ -1539,6 +1542,9 @@ namespace IngameScript
                     var defineValue = long.Parse(strs[1]);
                     if (defineValue <= 0) continue;
                     var rItem = refinery.InputInventory.FindItem(item.Type);
+
+                    if (rItem.HasValue && _refineryIni.Get(refineriesAutoManagerSelection, notAddWhenInputItemHasValue).ToBoolean()) continue;
+                    
                     long rItemAmount = 0;
                     if (rItem.HasValue) rItemAmount = rItem.Value.Amount.ToIntSafe();
                     if (rItemAmount >= defineValue) continue;
