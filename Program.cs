@@ -7,8 +7,8 @@ namespace IngameScript
         /*
         * R e a d m e
         * -----------
-        * Base Graphical inventory display for LCD by Space Engineers Script.
-        * 太空工程师，基地图形化显示库存脚本。
+        * Base graphical inventory display for LCD by Space Engineers Script.
+        * 太空工程师，基地图形化脚本。
         * 
         * @version 1.0.0
         * @see <https://github.com/se-scripts/mybase>
