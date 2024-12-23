@@ -61,27 +61,43 @@
 
 这部分配置写在每个精炼厂的自定义数据里。
 
-## InputItemList
+# [BasicConfig]
+
+- IsCargoSameConstructAs: 
+	- 配置成`true`，只检索当前网格的所有箱子
+	- 配置成`false`，检索范围包括所有与当前网格连接的网格的所有箱子
+- IsAssemblerSameConstructAs: 
+	- 配置成`true`，只检索当前网格的所有装配机
+	- 配置成`false`，检索范围包括所有与当前网格连接的网格的所有装配机
+- IsRefinerySameConstructAs: 
+	- 配置成`true`，只检索当前网格的所有精炼厂
+	- 配置成`false`，检索范围包括所有与当前网格连接的网格的所有精炼厂
+- IsPowerProducerSameConstructAs: 
+	- 配置成`true`，只检索当前网格的所有电源生产着，比如反应堆
+	- 配置成`false`，检索范围包括所有与当前网格连接的网格的所有电源生产着，比如反应堆
+
+# [InputItemList]
 这部分会根据箱子里有多少种原矿，动态生成多少行配置，只需要改数字即可，其它的不要动。
 
 数字配置成0代表脚本不拉取该原矿，数字配置成正数，代表脚本每次拉取多少原矿，建议不要过大，导致单个原矿直接堵住了入料口。
 
 
-## RefineriesAutoManager
+# [RefineriesAutoManager]
 
-### NotAddWhenInputItemHasValue
-默认为true，代表如果精炼厂入料口有原矿，则不拉取该原矿；
+## NotAddWhenInputItemHasValue
+默认为`true`，代表如果精炼厂入料口有原矿，则不拉取该原矿；
 这个如果配置成false，那么脚本每次检测的时候，都会将你的精炼厂入料口数量添加到配置的数量，
 意味着只有你箱子里还有矿，那么永远都精炼入料口第一个矿，直到第一个矿全部精炼完毕。
 
-## CargoAutoManager
+# [CargoAutoManager]
 这个是物品箱子自动分类的功能；
 
 你需要先让脚本跑10秒，脚本会往编程块写这个配置
 
 ## enable
-默认为false，代表不启用这个功能
-配置成true，启用该功能
+默认为`false`，代表不启用这个功能
+
+配置成`true`，启用该功能
 
 
 ## 箱子命名
