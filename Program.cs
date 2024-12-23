@@ -65,7 +65,6 @@ namespace IngameScript
             , isRefinerySameConstructAsKey = "IsRefinerySameConstructAs", defaultIsRefinerySameConstructAsValue = "true"
             , isPowerProducerSameConstructAsKey = "IsPowerProducerSameConstructAs", defaultIsPowerProducerSameConstructAsValue = "true"
             , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "true";
-        const string gpsSelection = "GPS", enableGpsRecord = "enableGpsRecord", defaultEnableGpsRecord = "false";
         const string overallConfigSeletion = "OverallConfig", displayAssemblerCustomName = "DisplayAssemblerName";
 
 
@@ -129,40 +128,6 @@ namespace IngameScript
             foreach (var assembler in assemblers) assembler.CustomData = "0";
 
 
-            string enableGpsRecord = defaultEnableGpsRecord;
-            GetConfiguration_from_CustomData(gpsSelection, enableGpsRecord, out enableGpsRecord);
-            if (enableGpsRecord == "true") {
-                /// 获取GPS
-                StringBuilder sb = new StringBuilder();
-                sb.Append("GPS:");
-                sb.Append(Me.CustomName.ToString());
-                sb.Append(":");
-                sb.Append(Me.GetPosition().X.ToString());
-                sb.Append(":");
-                sb.Append(Me.GetPosition().Y.ToString());
-                sb.Append(":");
-                sb.Append(Me.GetPosition().Z.ToString());
-                sb.Append(":");
-                DebugLCD(sb.ToString());
-                WriteConfiguration_to_CustomData(gpsSelection, Me.EntityId.ToString(), sb.ToString());
-                sb.Clear();
-                foreach (var cargo in cargoContainers)
-                {
-                    sb.Clear();
-                    sb.Append("GPS:");
-                    sb.Append(cargo.CustomName.ToString());
-                    sb.Append(":");
-                    sb.Append(cargo.GetPosition().X.ToString());
-                    sb.Append(":");
-                    sb.Append(cargo.GetPosition().Y.ToString());
-                    sb.Append(":");
-                    sb.Append(cargo.GetPosition().Z.ToString());
-                    sb.Append(":");
-                    string gps = sb.ToString();
-                    WriteConfiguration_to_CustomData(gpsSelection, cargo.EntityId.ToString(), sb.ToString());
-                }
-
-            }
 
         }
 
@@ -256,7 +221,6 @@ namespace IngameScript
                 _ini.Set(basicConfigSelection, isPowerProducerSameConstructAsKey, defaultIsPowerProducerSameConstructAsValue);
                 _ini.Set(basicConfigSelection, isReactorSameConstructAsKey, defaultIsReactorSameConstructAsValue);
 
-                _ini.Set(gpsSelection, enableGpsRecord, defaultEnableGpsRecord);
                 _ini.Set(overallConfigSeletion, displayAssemblerCustomName, "");
 
 
