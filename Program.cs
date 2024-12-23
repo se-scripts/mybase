@@ -55,11 +55,9 @@ namespace IngameScript
 
         const int itemAmountInEachScreen = 35, facilityAmountInEachScreen = 20;
         const float itemBox_ColumnInterval_Float = 73, itemBox_RowInterval_Float = 102, amountBox_Height_Float = 24, facilityBox_RowInterval_Float = 25.5f;
-        const string information_Section = "Information", broadCastConnectorGPS_Key = "BroadCastConnectorGPS (Y/N)";
         const string translateList_Section = "Translate_List", length_Key = "Length";
         int counter_ProgramRefresh = 0, counter_ShowItems = 0, counter_ShowFacilities = 0, counter_InventoryManagement = 0, counter_AssemblerManagement = 0, counter_RefineryManagement = 0, counter_Panel = 0;
         double counter_Logo = 0;
-        const string icetoUranium_Section = "Ice_To_Uranium", buttonOn_Key = "Button_On";
         const string basicConfigSelection = "BasicConfig"
             , isCargoSameConstructAsKey = "IsCargoSameConstructAs", defaultIsCargoSameConstructAsValue = "true"
             , isAssemblerSameConstructAsKey = "IsAssemblerSameConstructAs", defaultIsAssemblerSameConstructAsValue = "true"
@@ -201,20 +199,6 @@ namespace IngameScript
             dataTemp = Me.CustomData;
             if (dataTemp == "" || dataTemp == null)
             {
-                _ini.Set(information_Section, broadCastConnectorGPS_Key, "N");
-                _ini.Set(information_Section, "LCD_Overall_Display", "LCD_Overall_Display | Fill In CustomName of Panel");
-                _ini.Set(information_Section, "LCD_Inventory_Display", "LCD_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
-                _ini.Set(information_Section, "LCD_Ore_Inventory_Display", "LCD_Ore_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
-                _ini.Set(information_Section, "LCD_Ingot_Inventory_Display", "LCD_Ingot_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
-                _ini.Set(information_Section, "LCD_Component_Inventory_Display", "LCD_Component_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
-                _ini.Set(information_Section, "LCD_AmmoMagazine_Inventory_Display", "LCD_AmmoMagazine_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
-                _ini.Set(information_Section, "LCD_Refinery_Inventory_Display", "LCD_Refinery_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
-                _ini.Set(information_Section, "LCD_Assembler_Inventory_Display", "LCD_Assembler_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
-                _ini.Set(information_Section, "Check_Cockpit", "CPT | Fill In Argument of Programmable Block And Press Run");
-                _ini.Set(information_Section, "Assemblers_CooperativeMode", "CO_ON or CO_OFF | Fill In Argument of Programmable Block And Press Run");
-                _ini.Set(information_Section, "Assemblers_On", "ASS_ON:X | X=1,2,3... | Fill In Argument of Programmable Block And Press Run");
-                _ini.Set(information_Section, "Refineries_On", "REF_ON:X | X=1,2,3... | Fill In Argument of Programmable Block And Press Run");
-
 
                 _ini.Set(basicConfigSelection, isCargoSameConstructAsKey, defaultIsCargoSameConstructAsValue);
                 _ini.Set(basicConfigSelection, isAssemblerSameConstructAsKey, defaultIsAssemblerSameConstructAsValue);
