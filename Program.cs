@@ -1597,9 +1597,7 @@ namespace IngameScript
 
 
             List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, block => {
-                return block.HasInventory && !filterBlockNames.Contains(block.BlockDefinition.TypeIdString) && !block.DisplayNameText.Contains(CARGO_DISABLE_TAG);
-            });
+            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, block => block.HasInventory && !filterBlockNames.Contains(block.BlockDefinition.TypeIdString) && !block.DisplayNameText.Contains(CARGO_DISABLE_TAG));
             Echo($"有效货箱数:{blocks.Count}");
             //矿物箱子
             var oreBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_ORE_TAG)).ToList();
