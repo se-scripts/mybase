@@ -62,6 +62,9 @@
 
 配置好后开启事件控制器方块，你拆卸设备会自动更新脚本用到的方块集合，不会报错了。
 
+# [OverallConfig]
+
+- DisplayAssemblerName: 配置成一个复制的一个装配机的名称，会在总揽面板里展示装配机的生产进度。
 
 # [BasicConfig]
 
