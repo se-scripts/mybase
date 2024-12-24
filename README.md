@@ -55,6 +55,12 @@
 ![image](https://github.com/se-scripts/inventory-graphic/assets/46225881/6740f7e2-f7e6-4f36-ab58-08f4d856180e)
 
 
+# 关于拆卸设备时的脚本报错
+
+你需要安一个`事件控制器`，事件选择`方块已添加/已移除`, 动作设置这块，1号位编程块运行参数`ReloadBlocksFromGridTerminalSystem1`, 2号位编程块运行参数`ReloadBlocksFromGridTerminalSystem2`，需要注意，这里的编程块是你运行当前脚本的编程块。
+
+配置好后开启事件控制器方块，你拆卸设备会自动更新脚本用到的方块集合，不会报错了。
+
 # 精炼自动管理配置
 
 编程块重置后，你需要先手动将精炼厂的入料口的东西全移动到箱子里，清空入料口，给脚本移动矿腾出空间。
