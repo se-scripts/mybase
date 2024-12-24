@@ -10,6 +10,7 @@ using System.Linq;
 using VRage;
 using System.Drawing;
 using Color = VRageMath.Color;
+using System.Collections.Specialized;
 
 namespace IngameScript
 {
@@ -484,6 +485,25 @@ namespace IngameScript
             string isCargoSameConstructAsStr = defaultIsCargoSameConstructAsValue;
             GetConfiguration_from_CustomData(basicConfigSelection, isCargoSameConstructAsKey, out isCargoSameConstructAsStr);
             bool isCargoSameConstructAs = (isCargoSameConstructAsStr == "true");
+
+            cargoContainers.Clear();
+            panels.Clear();
+            panels_Overall.Clear();
+            panels_Items_All.Clear();
+            panels_Items_Ore.Clear();
+            panels_Items_Ingot.Clear();
+            panels_Items_Component.Clear();
+            panels_Items_AmmoMagazine.Clear();
+            panels_Assemblers.Clear();
+            panels_Refineries.Clear();
+            oxygenTanks.Clear();
+            hydrogenTanks.Clear();
+            assemblers.Clear();
+            refineries.Clear();
+            powerProducers.Clear();
+            reactors.Clear();
+            gasGenerators.Clear();
+
             GridTerminalSystem.GetBlocksOfType(cargoContainers, b => (isCargoSameConstructAs ? b.IsSameConstructAs(Me) : true));
 
             GridTerminalSystem.GetBlocksOfType(panels, b => b.IsSameConstructAs(Me));
@@ -1684,6 +1704,12 @@ namespace IngameScript
         {
             Echo($"{DateTime.Now}");
             Echo("Program is running.");
+
+            if (argument == "ReloadBlocksFromGridTerminalSystem" || argument == "ReloadBlocksFromGridTerminalSystem1" || argument == "ReloadBlocksFromGridTerminalSystem2")
+            {
+                // DebugLCD("ReloadBlocksFromGridTerminalSystem: argument=" + argument);
+                GetBlocksFromGridTerminalSystem();
+            }
 
             if (counter_ProgramRefresh != 1 || counter_ProgramRefresh != 6 || counter_ProgramRefresh != 11 || counter_ProgramRefresh != 16)
             {
