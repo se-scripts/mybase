@@ -1298,7 +1298,7 @@ namespace IngameScript
                     double maxVolume_Double = ((double)assembler.OutputInventory.MaxVolume);
                     double volumeRatio_Double = currentVolume_Double / maxVolume_Double;
 
-                    if (assemblers[assemblerCounter].IsProducing == false)
+                    if (!assemblers[assemblerCounter].IsProducing)
                     {
                         foreach (var cargoContainer in cargoContainers)
                         {
