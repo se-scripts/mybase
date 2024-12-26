@@ -136,5 +136,29 @@
 
 
 
+# [AssemblerInputManager]
 
+这个是脚本给装配机添加原料的功能，配置在编程块自定义数据里，默认关闭；
 
+## enable
+是否启用该功能，默认为`false`关闭，
+启用则需配置成`true` 
+
+## AssemblerCustomNameKeyword
+装配机名称包含的关键字，默认为`压缩`，代表该功能只管理名称包含`压缩`的装配机
+
+## 单个装配机的自定义数据配置
+
+示例：
+```
+[InputItemList]
+Length=1
+1=MyObjectBuilder_Ingot/Nickel:40000
+
+```
+
+### InputItemList
+
+`Length`: 配置了几行则脚本读取几行
+
+中间是物品的类型ID，参考翻译列表，右边是设定的最大数量，不建议过大，设置超过装配机入料口的最大空间，则不会进行移动。
