@@ -11,6 +11,7 @@ using VRage;
 using System.Drawing;
 using Color = VRageMath.Color;
 using System.Collections.Specialized;
+using Sandbox.Game.Entities;
 
 namespace IngameScript
 {
@@ -125,7 +126,6 @@ namespace IngameScript
                 panels[0].GetSprites(spritesList);
             }
 
-            foreach (var assembler in assemblers) assembler.CustomData = "0";
 
 
 
@@ -1240,7 +1240,7 @@ namespace IngameScript
 
         public void ManageInventory()
         {
-            if (counter_InventoryManagement++ >= 11) counter_InventoryManagement = 1;
+            if (counter_InventoryManagement++ >= 13) counter_InventoryManagement = 1;
 
             switch (counter_InventoryManagement)
             {
@@ -1274,7 +1274,97 @@ namespace IngameScript
                 case 10:
                     RefineriesAutoManager();
                     break;
+                case 11:
+                    AssemblerInputManager();
+                    break;
+                case 12:
+                    AssemblerInputManager();
+                    break;
             }
+        }
+
+
+        MyIni _assemblerIni = new MyIni();
+        const string assemblerInputManagerSection = "AssemblerInputManager", enable = "enable", defaultEnable = "false"
+            , assemblerCustomNameKeyword = "AssemblerCustomNameKeyword", defaultAssemblerCustomNameKeyword = "压缩";
+        const string assemblerInputItemListSelection = "InputItemList", assemblerInputItemListLengthKey = "Length";
+        Dictionary<string, double> assemblerInputItemTypeIdAmounts = new Dictionary<string, double>();
+        
+        public void BuildAssemblerInputItemTypeIdAmounts(IMyAssembler assembler) {
+            _assemblerIni.Clear();
+            assemblerInputItemTypeIdAmounts.Clear();
+
+            if (assembler.CustomData == "0") assembler.CustomData = _assemblerIni.ToString();
+
+            MyIniParseResult result;
+            if (!_assemblerIni.TryParse(assembler.CustomData, out result))
+                throw new Exception(result.ToString());
+
+            if (!_assemblerIni.ContainsKey(assemblerInputItemListSelection, assemblerInputItemListLengthKey)) {
+                _assemblerIni.Set(assemblerInputItemListSelection, assemblerInputItemListLengthKey, 0);
+                assembler.CustomData = _assemblerIni.ToString();
+                return;
+            }
+
+            int length = _assemblerIni.Get(assemblerInputItemListSelection, assemblerInputItemListLengthKey).ToInt32();
+            if (length == 0) return;
+
+            for (int i = 1; i <= length; i++)
+            {
+                string value = _assemblerIni.Get(assemblerInputItemListSelection, i.ToString()).ToString();
+                string[] r2 = value.Split(':');
+
+                assemblerInputItemTypeIdAmounts.Add(r2[0], double.Parse(r2[1]));
+            }
+        }
+
+        public void AssemblerInputManager() {
+            Echo("AssemblerInputManager");
+            string meEnable = "";
+            GetConfiguration_from_CustomData(assemblerInputManagerSection, enable, out meEnable);
+            if (meEnable == "")
+            {
+                meEnable = defaultEnable;
+                WriteConfiguration_to_CustomData(assemblerInputManagerSection, enable, meEnable);
+            }
+            if (meEnable == defaultEnable) return;
+
+            string meAssemblerCustomNameKeyword = "";
+            GetConfiguration_from_CustomData(assemblerInputManagerSection, assemblerCustomNameKeyword, out meAssemblerCustomNameKeyword);
+            if (meAssemblerCustomNameKeyword == "")
+            {
+                meAssemblerCustomNameKeyword = defaultAssemblerCustomNameKeyword;
+                WriteConfiguration_to_CustomData(assemblerInputManagerSection, assemblerCustomNameKeyword, meAssemblerCustomNameKeyword);
+            }
+
+            foreach (IMyAssembler assembler in assemblers.FindAll(ass => ass.CustomName.Contains(defaultAssemblerCustomNameKeyword)).ToList()) {
+                BuildAssemblerInputItemTypeIdAmounts(assembler);
+                if (assemblerInputItemTypeIdAmounts.Count == 0) continue;
+
+                foreach (var cargoContainer in cargoContainers)
+                {
+                    if (cargoContainer.DisplayNameText.Contains(CARGO_DISABLE_TAG)) continue;
+
+                    List<MyInventoryItem> items = new List<MyInventoryItem>();
+                    cargoContainer.GetInventory().GetItems(items, i => assemblerInputItemTypeIdAmounts.ContainsKey(i.Type.ToString()));
+                    foreach (var item in items) {
+                        long assemblerInputAmount = assembler.InputInventory.GetItemAmount(item.Type).ToIntSafe();
+                        long assemblerInputCapacity = assembler.InputInventory.MaxVolume.ToIntSafe() - assembler.InputInventory.CurrentVolume.ToIntSafe();
+                        long cargoItemAmount = item.Amount.ToIntSafe();
+                        double setMaxAmount = assemblerInputItemTypeIdAmounts[item.Type.ToString()];
+                        if (assemblerInputAmount >= setMaxAmount) continue;
+                        long moveAmount = cargoItemAmount - assemblerInputAmount;
+                        moveAmount = Math.Min(moveAmount, int.Parse((setMaxAmount - assemblerInputAmount).ToString()));
+                        //moveAmount = Math.Min(moveAmount, assemblerInputCapacity);
+                        var amount = MyFixedPoint.DeserializeString((moveAmount.ToString()));
+                        if (!assembler.InputInventory.CanItemsBeAdded(amount, item.Type)) continue;
+                        assembler.InputInventory.TransferItemFrom(cargoContainer.GetInventory(), item, amount);
+                    }
+
+                }
+
+            }
+
         }
 
 
