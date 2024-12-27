@@ -82,8 +82,8 @@ namespace IngameScript
         {
             public string Name; // type id str
             public DateTime StartTime; 
-            public int LastCount;
-            public int Count;
+            public long LastCount;
+            public long Count;
             public double Rate; // 单位是 个每Tick
         }
         List<ItemStats> itemStatsList = new List<ItemStats>();
@@ -1844,7 +1844,7 @@ namespace IngameScript
             List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, block => block.HasInventory && !filterBlockNames.Contains(block.BlockDefinition.TypeIdString) && !block.DisplayNameText.Contains(CARGO_DISABLE_TAG));
 
-            Dictionary<string, int> statsMap = new Dictionary<string, int>();
+            Dictionary<string, long> statsMap = new Dictionary<string, long>();
 
             foreach (var type in statsItemTyps) {
                 statsMap.Add(type, 0);
@@ -1869,8 +1869,8 @@ namespace IngameScript
 
                 foreach (var type in statsItemTyps)
                 {
-                    var count = currentInventory.GetItemAmount(MyItemType.Parse(type)).ToIntSafe();
-                    statsMap[type] = statsMap[type] + count;
+                    var count = currentInventory.GetItemAmount(MyItemType.Parse(type)).RawValue / 1000000;
+                    statsMap[type] += count;
 
                 }
 
@@ -1880,7 +1880,7 @@ namespace IngameScript
             foreach (var name in statsItemTyps)
             {
                 int index = itemStatsList.FindIndex(e => e.Name == name);
-                int count = statsMap[name];
+                long count = statsMap[name];
                 if (index == -1)
                 {
                     ItemStats newStats = new ItemStats();
