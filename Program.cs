@@ -15,6 +15,8 @@ using Sandbox.Game.Entities;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
 using VRageRender.Utils;
+using VRage.Game.ObjectBuilders.Definitions;
+using VRageRender;
 
 namespace IngameScript
 {
@@ -36,7 +38,6 @@ namespace IngameScript
         MyIni _ini = new MyIni();
 
         List<IMyCargoContainer> cargoContainers = new List<IMyCargoContainer>();
-        IMyTextPanel statisticsPanel = null;
         List<IMyTextPanel> panels = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Items_All = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Items_Ore = new List<IMyTextPanel>();
@@ -46,6 +47,7 @@ namespace IngameScript
         List<IMyTextPanel> panels_Refineries = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Assemblers = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Overall = new List<IMyTextPanel>();
+        List<IMyTextPanel> statisticsPanels = new List<IMyTextPanel>();
         List<IMyGasTank> oxygenTanks = new List<IMyGasTank>();
         List<IMyGasTank> hydrogenTanks = new List<IMyGasTank>();
         List<IMyAssembler> assemblers = new List<IMyAssembler>();
@@ -63,7 +65,6 @@ namespace IngameScript
         const int itemAmountInEachScreen = 35, facilityAmountInEachScreen = 20;
         const float itemBox_ColumnInterval_Float = 73, itemBox_RowInterval_Float = 102, amountBox_Height_Float = 24, facilityBox_RowInterval_Float = 25.5f;
         const string translateList_Section = "Translate_List", length_Key = "Length";
-        const string statsSection = "Stats", statsLengthKey = "Length", statsTimeIntervalKey = "StatsTimeInterval", defaultStatsTimeInterval = "5";
         int counter_ProgramRefresh = 0, counter_ShowItems = 0, counter_ShowFacilities = 0, counter_InventoryManagement = 0, counter_AssemblerManagement = 0, counter_RefineryManagement = 0, counter_Panel = 0;
         double counter_Logo = 0;
         const string basicConfigSelection = "BasicConfig"
@@ -86,8 +87,6 @@ namespace IngameScript
             public long Count;
             public double Rate; // 单位是 个每Tick
         }
-        List<ItemStats> itemStatsList = new List<ItemStats>();
-        HashSet<string> statsItemTyps = new HashSet<string>();
 
         public struct ItemList
         {
@@ -127,8 +126,6 @@ namespace IngameScript
             SetDefultConfiguration();
 
             BuildTranslateDic();
-
-            BuildStatsItemTyps();
 
             GetBlocksFromGridTerminalSystem();
 
@@ -235,14 +232,6 @@ namespace IngameScript
                 Me.CustomData = _ini.ToString();
             }// End if
 
-            if (!_ini.ContainsSection(statsSection)) {
-                _ini.Set(statsSection, statsTimeIntervalKey, defaultStatsTimeInterval);
-                _ini.Set(statsSection, statsLengthKey, 0);
-                Me.CustomData = _ini.ToString();
-            }
-            string value;
-            GetConfiguration_from_CustomData(statsSection, statsTimeIntervalKey, out value);
-            statsTimeInterval = Convert.ToInt32(value);
 
         }
 
@@ -509,17 +498,6 @@ namespace IngameScript
             }
         }
 
-        public void BuildStatsItemTyps() {
-            string value;
-            GetConfiguration_from_CustomData(statsSection, statsLengthKey, out value);
-            int length = Convert.ToInt16(value);
-
-            for (int i = 1; i <= length; i++)
-            {
-                GetConfiguration_from_CustomData(statsSection, i.ToString(), out value);
-                statsItemTyps.Add(value);
-            }
-        }
 
         public void GetBlocksFromGridTerminalSystem() {
             string isCargoSameConstructAsStr = defaultIsCargoSameConstructAsValue;
@@ -547,8 +525,7 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(cargoContainers, b => (isCargoSameConstructAs ? b.IsSameConstructAs(Me) : true));
 
             GridTerminalSystem.GetBlocksOfType(panels, b => b.IsSameConstructAs(Me));
-            var sPanRes = GridTerminalSystem.GetBlockWithName("LCD_Statistics");
-            if (sPanRes != null) statisticsPanel = (IMyTextPanel)sPanRes;
+            GridTerminalSystem.GetBlocksOfType(statisticsPanels, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Statistics"));
             GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_Ore, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ore_Inventory_Display:"));
@@ -1832,88 +1809,123 @@ namespace IngameScript
 
         //###############     End CargoAutoManager     ###############
 
-        private int statsTimeInterval = 5; // s
-        private DateTime lastTime;
-        public void UpdateItemStatsList() {
-            if (statisticsPanel == null) return;
-            TimeSpan elapsedTime = DateTime.Now - lastTime;
-            if (elapsedTime.TotalSeconds < statsTimeInterval) return;
 
-            lastTime = DateTime.Now;
+        //###############     Start UpdateStatsLcds     ###############
+        MyIni _statisticsIni = new MyIni();
+        const string itemListSection = "ItemList", itemListLengthKey = "Length", statsTimeConfigSection = "Config", statsTimeIntervalKey = "StatsTimeInterval", defaultStatsTimeInterval = "1";
+        Dictionary<long, List<ItemStats>> panelItemStatsListMap = new Dictionary<long, List<ItemStats>>();
+        Dictionary<long, DateTime> panelLastTimeMap = new Dictionary<long, DateTime>();
+        public void UpdateStatsLcds() {
+            if (statisticsPanels.Count == 0) return;
 
             List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, block => block.HasInventory && !filterBlockNames.Contains(block.BlockDefinition.TypeIdString) && !block.DisplayNameText.Contains(CARGO_DISABLE_TAG));
 
-            Dictionary<string, long> statsMap = new Dictionary<string, long>();
 
-            foreach (var type in statsItemTyps) {
-                statsMap.Add(type, 0);
-            }
-
-            foreach (var block in blocks) {
-                IMyInventory currentInventory = null;
-                if (block.InventoryCount > 1)
-                {
-                    // 精炼机和组装机取输出容器
-                    currentInventory = block.GetInventory(1);
-                }
-                else
-                {
-                    // 普通方块取默认容器
-                    currentInventory = block.GetInventory();
-                }
-                if (currentInventory.CurrentVolume.RawValue <= 0L)
-                {
-                    continue;
-                }
-
-                foreach (var type in statsItemTyps)
-                {
-                    var count = currentInventory.GetItemAmount(MyItemType.Parse(type)).RawValue / 1000000;
-                    statsMap[type] += count;
-
-                }
-
-            }
-
-
-            foreach (var name in statsItemTyps)
+            foreach (var panel in statisticsPanels)
             {
-                int index = itemStatsList.FindIndex(e => e.Name == name);
-                long count = statsMap[name];
-                if (index == -1)
-                {
-                    ItemStats newStats = new ItemStats();
-                    newStats.Name = name;
-                    newStats.Rate = 0;
-                    newStats.StartTime = DateTime.Now;
-                    newStats.Count = count;
-                    newStats.LastCount = count;
-                    itemStatsList.Add(newStats);
-                }
-                else
-                {
-                    ItemStats stats = itemStatsList[index];
-                    stats.LastCount = stats.Count;
-                    stats.Count = count;
-                    stats.Rate = (double)(stats.Count - stats.LastCount);
+                if (panel.CustomData == null || panel.CustomData == "") panel.CustomData = _statisticsIni.ToString();
+                _statisticsIni.Clear();
+                MyIniParseResult result;
+                if (!_statisticsIni.TryParse(panel.CustomData, out result))
+                    throw new Exception(result.ToString());
 
-                    itemStatsList.RemoveAt(index);
-                    itemStatsList.Add(stats);
+                if (!_statisticsIni.ContainsKey(statsTimeConfigSection, statsTimeIntervalKey)) _statisticsIni.Set(statsTimeConfigSection, statsTimeIntervalKey, defaultStatsTimeInterval);
+                if (!_statisticsIni.ContainsKey(itemListSection, itemListLengthKey)) _statisticsIni.Set(itemListSection, itemListLengthKey, "0");
+                panel.CustomData = _statisticsIni.ToString();
 
+                long statsTimeInterval =  _statisticsIni.Get(statsTimeConfigSection, statsTimeIntervalKey).ToInt32();
+                if (!panelLastTimeMap.ContainsKey(panel.EntityId)) panelLastTimeMap.Add(panel.EntityId, DateTime.Now);
+
+                TimeSpan elapsedTime = DateTime.Now - panelLastTimeMap[panel.EntityId];
+                if (elapsedTime.TotalSeconds < statsTimeInterval) continue;
+
+                long length = _statisticsIni.Get(itemListSection, itemListLengthKey).ToInt32();
+                Dictionary<string, long> itemTypeCountMap = new Dictionary<string, long>();
+                for (int i = 1; i <= length; i++)
+                {
+                    var itemType = _statisticsIni.Get(itemListSection, i.ToString()).ToString();
+                    itemTypeCountMap.Add(itemType, 0);
                 }
+
+                foreach (var block in blocks) {
+                    IMyInventory currentInventory = null;
+                    if (block.InventoryCount > 1)
+                    {
+                        // 精炼机和组装机取输出容器
+                        currentInventory = block.GetInventory(1);
+                    }
+                    else
+                    {
+                        // 普通方块取默认容器
+                        currentInventory = block.GetInventory();
+                    }
+                    if (currentInventory.CurrentVolume.RawValue <= 0L)
+                    {
+                        continue;
+                    }
+
+                    foreach (var type in itemTypeCountMap.Keys)
+                    {
+                        var count = currentInventory.GetItemAmount(MyItemType.Parse(type)).RawValue / 1000000;
+                        itemTypeCountMap[type] += count;
+                    }
+                }
+
+                foreach (var name in itemTypeCountMap.Keys)
+                {
+                    List<ItemStats> itemStatsList = new List<ItemStats>();
+
+                    if (panelItemStatsListMap.ContainsKey(panel.EntityId))
+                    {
+                        itemStatsList.AddList(panelItemStatsListMap[panel.EntityId]);
+                        panelItemStatsListMap.Remove(panel.EntityId);
+                    }
+
+                    int index = itemStatsList.FindIndex(e => e.Name == name);
+                    long count = itemTypeCountMap[name];
+                    if (index == -1)
+                    {
+                        ItemStats newStats = new ItemStats();
+                        newStats.Name = name;
+                        newStats.Rate = 0;
+                        newStats.StartTime = DateTime.Now;
+                        newStats.Count = count;
+                        newStats.LastCount = count;
+                        itemStatsList.Add(newStats);
+                    }
+                    else
+                    {
+                        ItemStats stats = itemStatsList[index];
+                        stats.LastCount = stats.Count;
+                        stats.Count = count;
+                        stats.Rate = (double)(stats.Count - stats.LastCount);
+
+                        itemStatsList.RemoveAt(index);
+                        itemStatsList.Add(stats);
+
+                    }
+
+                    panelItemStatsListMap.Add(panel.EntityId, itemStatsList);
+                }
+
+                RenderStatisticsPanel(panel, statsTimeInterval);
+
             }
 
-            RenderStatisticsPanel();
 
         }
 
 
 
-        public void RenderStatisticsPanel() { 
-            if (statisticsPanel == null) { return; }
-            string res = "物品库存变化统计\n" + DateTime.Now.ToString() + "\n";
-            foreach (var itemStats in itemStatsList) { 
+        public void RenderStatisticsPanel(IMyTextPanel statisticsPanel, long statsTimeInterval) { 
+            if (statisticsPanel == null || !panelItemStatsListMap.ContainsKey(statisticsPanel.EntityId)) { return; }
+            
+            string res = "";
+            res += "物品库存变化统计 <==> " + statisticsPanel.DisplayNameText + "\n";
+            res += DateTime.Now.ToString() + "\n";
+
+            foreach (var itemStats in panelItemStatsListMap[statisticsPanel.EntityId]) { 
                 res += TranslateName(itemStats.Name);
                 res += ": ";
                 res += itemStats.Count.ToString("N0") + "  |  ";
@@ -1922,6 +1934,8 @@ namespace IngameScript
             }
             statisticsPanel.WriteText(res);
         }
+        //###############     End UpdateStatsLcds     ###############
+
 
         public void Main(string argument, UpdateType updateSource)
         {
@@ -1942,7 +1956,7 @@ namespace IngameScript
 
                 OverallDisplay();
 
-                UpdateItemStatsList();
+                UpdateStatsLcds();
             }
 
             if (counter_ProgramRefresh++ >= 21) counter_ProgramRefresh = 0;
