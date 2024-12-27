@@ -40,6 +40,8 @@
 
 
 物品变化统计面板的名字是：LCD_Statistics
+	
+[Stats] => StatsTimeInterval: 统计间隔
 
 
 # 如何使用
