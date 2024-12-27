@@ -39,6 +39,9 @@
        1.7 装配机情况，显示屏命名"LCD_Assembler_Inventory_Display:X", X=1,2,3...
 
 
+物品变化统计面板的名字是：LCD_Statistics
+
+
 # 如何使用
 
 视频演示：<https://www.bilibili.com/video/BV1AQktYcEuT/>

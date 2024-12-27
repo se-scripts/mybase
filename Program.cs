@@ -12,6 +12,9 @@ using System.Drawing;
 using Color = VRageMath.Color;
 using System.Collections.Specialized;
 using Sandbox.Game.Entities;
+using System.Diagnostics;
+using System.Collections.ObjectModel;
+using VRageRender.Utils;
 
 namespace IngameScript
 {
@@ -33,6 +36,7 @@ namespace IngameScript
         MyIni _ini = new MyIni();
 
         List<IMyCargoContainer> cargoContainers = new List<IMyCargoContainer>();
+        IMyTextPanel statisticsPanel = null;
         List<IMyTextPanel> panels = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Items_All = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Items_Ore = new List<IMyTextPanel>();
@@ -52,12 +56,14 @@ namespace IngameScript
         List<string> spritesList = new List<string>();
 
 
+
         Dictionary<string, string> translator = new Dictionary<string, string>();
         Dictionary<string, double> productionList = new Dictionary<string, double>();
 
         const int itemAmountInEachScreen = 35, facilityAmountInEachScreen = 20;
         const float itemBox_ColumnInterval_Float = 73, itemBox_RowInterval_Float = 102, amountBox_Height_Float = 24, facilityBox_RowInterval_Float = 25.5f;
         const string translateList_Section = "Translate_List", length_Key = "Length";
+        const string statsSection = "Stats", statsLengthKey = "Length", statsTimeIntervalKey = "StatsTimeInterval", defaultStatsTimeInterval = "5";
         int counter_ProgramRefresh = 0, counter_ShowItems = 0, counter_ShowFacilities = 0, counter_InventoryManagement = 0, counter_AssemblerManagement = 0, counter_RefineryManagement = 0, counter_Panel = 0;
         double counter_Logo = 0;
         const string basicConfigSelection = "BasicConfig"
@@ -71,6 +77,17 @@ namespace IngameScript
 
         Color background_Color = new Color(0, 35, 45);
         Color border_Color = new Color(0, 130, 255);
+
+        public struct ItemStats
+        {
+            public string Name; // type id str
+            public DateTime StartTime; 
+            public int LastCount;
+            public int Count;
+            public double Rate; // 单位是 个每Tick
+        }
+        List<ItemStats> itemStatsList = new List<ItemStats>();
+        HashSet<string> statsItemTyps = new HashSet<string>();
 
         public struct ItemList
         {
@@ -110,6 +127,8 @@ namespace IngameScript
             SetDefultConfiguration();
 
             BuildTranslateDic();
+
+            BuildStatsItemTyps();
 
             GetBlocksFromGridTerminalSystem();
 
@@ -215,6 +234,15 @@ namespace IngameScript
 
                 Me.CustomData = _ini.ToString();
             }// End if
+
+            if (!_ini.ContainsSection(statsSection)) {
+                _ini.Set(statsSection, statsTimeIntervalKey, defaultStatsTimeInterval);
+                _ini.Set(statsSection, statsLengthKey, 0);
+                Me.CustomData = _ini.ToString();
+            }
+            string value;
+            GetConfiguration_from_CustomData(statsSection, statsTimeIntervalKey, out value);
+            statsTimeInterval = Convert.ToInt32(value);
 
         }
 
@@ -481,6 +509,18 @@ namespace IngameScript
             }
         }
 
+        public void BuildStatsItemTyps() {
+            string value;
+            GetConfiguration_from_CustomData(statsSection, statsLengthKey, out value);
+            int length = Convert.ToInt16(value);
+
+            for (int i = 1; i <= length; i++)
+            {
+                GetConfiguration_from_CustomData(statsSection, i.ToString(), out value);
+                statsItemTyps.Add(value);
+            }
+        }
+
         public void GetBlocksFromGridTerminalSystem() {
             string isCargoSameConstructAsStr = defaultIsCargoSameConstructAsValue;
             GetConfiguration_from_CustomData(basicConfigSelection, isCargoSameConstructAsKey, out isCargoSameConstructAsStr);
@@ -507,6 +547,8 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(cargoContainers, b => (isCargoSameConstructAs ? b.IsSameConstructAs(Me) : true));
 
             GridTerminalSystem.GetBlocksOfType(panels, b => b.IsSameConstructAs(Me));
+            var sPanRes = GridTerminalSystem.GetBlockWithName("LCD_Statistics");
+            if (sPanRes != null) statisticsPanel = (IMyTextPanel)sPanRes;
             GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_Ore, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ore_Inventory_Display:"));
@@ -1790,6 +1832,97 @@ namespace IngameScript
 
         //###############     End CargoAutoManager     ###############
 
+        private int statsTimeInterval = 5; // s
+        private DateTime lastTime;
+        public void UpdateItemStatsList() {
+            if (statisticsPanel == null) return;
+            TimeSpan elapsedTime = DateTime.Now - lastTime;
+            if (elapsedTime.TotalSeconds < statsTimeInterval) return;
+
+            lastTime = DateTime.Now;
+
+            List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
+            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, block => block.HasInventory && !filterBlockNames.Contains(block.BlockDefinition.TypeIdString) && !block.DisplayNameText.Contains(CARGO_DISABLE_TAG));
+
+            Dictionary<string, int> statsMap = new Dictionary<string, int>();
+
+            foreach (var type in statsItemTyps) {
+                statsMap.Add(type, 0);
+            }
+
+            foreach (var block in blocks) {
+                IMyInventory currentInventory = null;
+                if (block.InventoryCount > 1)
+                {
+                    // 精炼机和组装机取输出容器
+                    currentInventory = block.GetInventory(1);
+                }
+                else
+                {
+                    // 普通方块取默认容器
+                    currentInventory = block.GetInventory();
+                }
+                if (currentInventory.CurrentVolume.RawValue <= 0L)
+                {
+                    continue;
+                }
+
+                foreach (var type in statsItemTyps)
+                {
+                    var count = currentInventory.GetItemAmount(MyItemType.Parse(type)).ToIntSafe();
+                    statsMap[type] = statsMap[type] + count;
+
+                }
+
+            }
+
+
+            foreach (var name in statsItemTyps)
+            {
+                int index = itemStatsList.FindIndex(e => e.Name == name);
+                int count = statsMap[name];
+                if (index == -1)
+                {
+                    ItemStats newStats = new ItemStats();
+                    newStats.Name = name;
+                    newStats.Rate = 0;
+                    newStats.StartTime = DateTime.Now;
+                    newStats.Count = count;
+                    newStats.LastCount = count;
+                    itemStatsList.Add(newStats);
+                }
+                else
+                {
+                    ItemStats stats = itemStatsList[index];
+                    stats.LastCount = stats.Count;
+                    stats.Count = count;
+                    stats.Rate = (double)(stats.Count - stats.LastCount);
+
+                    itemStatsList.RemoveAt(index);
+                    itemStatsList.Add(stats);
+
+                }
+            }
+
+            RenderStatisticsPanel();
+
+        }
+
+
+
+        public void RenderStatisticsPanel() { 
+            if (statisticsPanel == null) { return; }
+            string res = "物品库存变化统计\n" + DateTime.Now.ToString() + "\n";
+            foreach (var itemStats in itemStatsList) { 
+                res += TranslateName(itemStats.Name);
+                res += ": ";
+                res += itemStats.Count.ToString("N0") + "  |  ";
+                res += itemStats.Rate;
+                res += " /"+ statsTimeInterval + "秒\n";
+            }
+            statisticsPanel.WriteText(res);
+        }
+
         public void Main(string argument, UpdateType updateSource)
         {
             Echo($"{DateTime.Now}");
@@ -1808,6 +1941,8 @@ namespace IngameScript
                 ProgrammableBlockScreen();
 
                 OverallDisplay();
+
+                UpdateItemStatsList();
             }
 
             if (counter_ProgramRefresh++ >= 21) counter_ProgramRefresh = 0;
