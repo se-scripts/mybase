@@ -39,10 +39,6 @@
        1.7 装配机情况，显示屏命名"LCD_Assembler_Inventory_Display:X", X=1,2,3...
 
 
-物品变化统计面板的名字是：LCD_Statistics
-	
-[Stats] => StatsTimeInterval: 统计间隔
-
 
 # 如何使用
 
@@ -167,3 +163,40 @@ Length=1
 `Length`: 配置了几行则脚本读取几行
 
 中间是物品的类型ID，参考翻译列表，右边是设定的最大数量，不建议过大，设置超过装配机入料口的最大空间，则不会进行移动。
+
+
+
+# LCD物品变化统计
+
+物品变化统计面板的名字是：LCD_Statistics
+	
+[Stats] => StatsTimeInterval: 统计间隔，需要注意的是，编程块的自定义数据修改后，需要重置代码
+
+例子：
+
+```
+[Stats]
+StatsTimeInterval=1
+Length=21
+1=MyObjectBuilder_Ingot/IronX10
+2=MyObjectBuilder_Ingot/SiliconX10
+3=MyObjectBuilder_Ingot/NickelX10
+4=MyObjectBuilder_Ingot/GoldX10
+5=MyObjectBuilder_Component/Neutronium
+6=MyObjectBuilder_Ingot/SilverX10
+7=MyObjectBuilder_Ingot/CobaltX10
+8=MyObjectBuilder_Ingot/Stone
+9=MyObjectBuilder_Ingot/Iron
+10=MyObjectBuilder_Ingot/Nickel
+11=MyObjectBuilder_Ingot/Cobalt
+12=MyObjectBuilder_Ingot/Magnesium
+13=MyObjectBuilder_Ingot/Silicon
+14=MyObjectBuilder_Ingot/Silver
+15=MyObjectBuilder_Ingot/Gold
+16=MyObjectBuilder_Ingot/Platinum
+17=MyObjectBuilder_Ingot/Uranium
+18=MyObjectBuilder_Ingot/Naquadah
+19=MyObjectBuilder_Ingot/Trinium
+20=MyObjectBuilder_Ingot/Neutronium
+21=MyObjectBuilder_Ingot/DeuteriumContainer
+```
