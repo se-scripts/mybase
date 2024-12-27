@@ -84,7 +84,7 @@ namespace IngameScript
             public DateTime StartTime; 
             public long LastCount;
             public long Count;
-            public double Rate; // 单位是 个每Tick
+            public double Difference; // 差额
         }
         List<ItemStats> itemStatsList = new List<ItemStats>();
         HashSet<string> statsItemTyps = new HashSet<string>();
@@ -1885,7 +1885,7 @@ namespace IngameScript
                 {
                     ItemStats newStats = new ItemStats();
                     newStats.Name = name;
-                    newStats.Rate = 0;
+                    newStats.Difference = 0;
                     newStats.StartTime = DateTime.Now;
                     newStats.Count = count;
                     newStats.LastCount = count;
@@ -1896,7 +1896,7 @@ namespace IngameScript
                     ItemStats stats = itemStatsList[index];
                     stats.LastCount = stats.Count;
                     stats.Count = count;
-                    stats.Rate = (double)(stats.Count - stats.LastCount);
+                    stats.Difference = stats.Count - stats.LastCount;
 
                     itemStatsList.RemoveAt(index);
                     itemStatsList.Add(stats);
@@ -1917,10 +1917,40 @@ namespace IngameScript
                 res += TranslateName(itemStats.Name);
                 res += ": ";
                 res += itemStats.Count.ToString("N0") + "  |  ";
-                res += itemStats.Rate;
-                res += " /"+ statsTimeInterval + "秒\n";
+                res += itemStats.Difference;
+                res += " /"+ statsTimeInterval + "秒";
+
+                if (itemStats.Difference < 0 && itemStats.Count > 10)
+                {
+                    var speed = Math.Abs(itemStats.Difference) / Convert.ToInt64(statsTimeInterval);
+                    var time = itemStats.Count / speed;
+                    string timeStr = ConvertTimeStr(Convert.ToInt64(time));
+                    res += " | " + timeStr;
+                }
+
+                res += "\n";
             }
             statisticsPanel.WriteText(res);
+        }
+
+        public string ConvertTimeStr(long totalSeconds) {
+
+            long days = totalSeconds / (24 * 3600);  // 计算天数
+            long hours = (totalSeconds % (24 * 3600)) / 3600;  // 计算小时
+            long minutes = (totalSeconds % 3600) / 60;  // 计算分钟
+            long seconds = totalSeconds % 60;  // 计算秒数
+
+            string formattedTime = "";
+            if (days > 0)
+                formattedTime += $"{days}天";
+            if (hours > 0)
+                formattedTime += $"{hours}小时";
+            if (minutes > 0)
+                formattedTime += $"{minutes}分钟";
+            if (seconds > 0 || formattedTime == "") // 如果秒数大于0，或者没有显示任何时间单位，则显示秒
+                formattedTime += $"{seconds}秒";
+
+            return formattedTime;
         }
 
         public void Main(string argument, UpdateType updateSource)
