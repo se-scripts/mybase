@@ -207,7 +207,7 @@ Length=21
 
 - `enable`: 默认为`false`，代表不启用；如果配置成`true`则代表启用映射。
 - `Length`: 代表脚本读取几行的映射配置
-- `{index}={key}:{value}: 
+- `{index}={key}:{value}`: 
 	- `index`代表索引，从1开始，到`Lengh`的值结束
 	- `key`是生产设备蓝图的`SubtypeId`，对着生产设备的面板安F打开，会显示每台设备的蓝图，例如`MyObjectBuilder_BlueprintDefinition/ZHBYX3`,这里`/`后的`ZHBYX3`就是`SubtypeId`
 	- `value`: 你需要进你网格的`生产`面板，找到对应的设备，查看对应的蓝图的图标最像什么物品，然后对着物品图形化面板按F打开，复制物品的ID，例如`MyObjectBuilder_Ingot/IronX10`，这里`/`后的`IronX10`就是需要的`value`值
