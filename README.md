@@ -200,3 +200,66 @@ Length=21
 20=MyObjectBuilder_Ingot/Neutronium
 21=MyObjectBuilder_Ingot/DeuteriumContainer
 ```
+
+# 生产设备蓝图图标映射配置 [ModBlueprintSubtypeIdResultMap]
+
+当前配置处于，编程块的自定义配置，修改后需重置代码
+
+- `enable`: 默认为`false`，代表不启用；如果配置成`true`则代表启用映射。
+- `Length`: 代表脚本读取几行的映射配置
+- `{index}={key}:{value}: 
+	- `index`代表索引，从1开始，到`Lengh`的值结束
+	- `key`是生产设备蓝图的`SubtypeId`，对着生产设备的面板安F打开，会显示每台设备的蓝图，例如`MyObjectBuilder_BlueprintDefinition/ZHBYX3`,这里`/`后的`ZHBYX3`就是`SubtypeId`
+	- `value`: 你需要进你网格的`生产`面板，找到对应的设备，查看对应的蓝图的图标最像什么物品，然后对着物品图形化面板按F打开，复制物品的ID，例如`MyObjectBuilder_Ingot/IronX10`，这里`/`后的`IronX10`就是需要的`value`值
+
+
+配置好启用和列表后，重置编程块代码，稍等片刻，生产设备图形化面板前面的图标就显示出来了。
+
+
+举个在璇玑星界服务器配置的例子：
+```
+[ModBlueprintSubtypeIdResultMap]
+enable=true
+Length=41
+1=ZHBY1:IronX10
+2=ZHBY2:NickelX10
+3=ZHBY3:SiliconX10
+4=ZHBY4:CobaltX10
+5=ZHBY5:MagnesiumX10
+6=ZHBY6:SilverX10
+7=ZHBY7:GoldX10
+8=ZHBY8:PlatinumX10
+9=ZHBY9:UraniumX10
+10=ZHBYX1:IronX10
+11=ZHBYX2:NickelX10
+12=ZHBYX3:SiliconX10
+13=ZHBYX4:CobaltX10
+14=ZHBYX5:MagnesiumX10
+15=ZHBYX6:SilverX10
+16=ZHBYX7:GoldX10
+17=ZHBYX8:PlatinumX10
+18=ZHBYX9:UraniumX10
+19=ZHBYY1:IronX100
+20=ZHBYY2:NickelX100
+21=ZHBYY3:SiliconX100
+22=ZHBYY4:CobaltX100
+23=ZHBYY5:MagnesiumX100
+24=ZHBYY6:SilverX100
+25=ZHBYY7:GoldX100
+26=ZHBYY8:PlatinumX100
+27=ZHBYY9:UraniumX100
+28=ZHBYYX1:IronX100
+29=ZHBYYX2:NickelX100
+30=ZHBYYX3:SiliconX100
+31=ZHBYYX4:CobaltX100
+32=ZHBYYX5:MagnesiumX100
+33=ZHBYYX6:SilverX100
+34=ZHBYYX7:GoldX100
+35=ZHBYYX8:PlatinumX100
+36=ZHBYYX9:UraniumX100
+37=contre11:ImpossibilityCore2
+38=Fkuangwu6:Silver
+39=Fkuangwu7:Gold
+40=Fkuangwu8:Platinum
+41=NeutroniumX2:Neutronium
+```
