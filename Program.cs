@@ -73,6 +73,8 @@ namespace IngameScript
             , isPowerProducerSameConstructAsKey = "IsPowerProducerSameConstructAs", defaultIsPowerProducerSameConstructAsValue = "true"
             , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "true";
         const string overallConfigSeletion = "OverallConfig", displayAssemblerCustomName = "DisplayAssemblerName";
+        const string modBlueprintSubtypeIdResultMapSelection = "ModBlueprintSubtypeIdResultMap", enableKey = "enable", modBlueprintSubtypeIdResultMapLengthKey = "Length";
+        Dictionary<string, string> modBlueprintSubtypeIdResultMap = new Dictionary<string, string>();
 
 
         Color background_Color = new Color(0, 35, 45);
@@ -243,6 +245,22 @@ namespace IngameScript
             string value;
             GetConfiguration_from_CustomData(statsSection, statsTimeIntervalKey, out value);
             statsTimeInterval = Convert.ToInt32(value);
+
+            if (!_ini.ContainsSection(modBlueprintSubtypeIdResultMapSelection)) {
+                _ini.Set(modBlueprintSubtypeIdResultMapSelection, enableKey, "false");
+                _ini.Set(modBlueprintSubtypeIdResultMapSelection, modBlueprintSubtypeIdResultMapLengthKey, 0);
+                Me.CustomData = _ini.ToString();
+            }
+            if (_ini.Get(modBlueprintSubtypeIdResultMapSelection, enableKey).ToBoolean())
+            {
+                var length = _ini.Get(modBlueprintSubtypeIdResultMapSelection, modBlueprintSubtypeIdResultMapLengthKey).ToInt64();
+                for (var i = 1; i <= length; i++)
+                {
+                    var str = _ini.Get(modBlueprintSubtypeIdResultMapSelection, i.ToString()).ToString();
+                    var strs = str.Split(':');
+                    modBlueprintSubtypeIdResultMap.Add(strs[0], strs[1]);
+                }
+            }
 
         }
 
@@ -1174,7 +1192,7 @@ namespace IngameScript
                     DrawSingleFacilityUnit(panel, frame, (k + 1).ToString() + ". " + facilityList[k].Name + " ×" + facilityList[k].Productivity + "%", facilityList[k].IsProducing_Bool, AmountUnitConversion(facilityList[k].ItemAmount), facilityList[k].Picture, facilityList[k].IsRepeatMode_Bool, facilityList[k].IsCooperativeMode_Bool, facilityList[k].IsEnabled_Bool, i);
                 }
 
-                panel.WriteText($"{(k + 1).ToString() + ".\n"}{facilityList[k].Name}", true);
+                panel.WriteText($"{(k + 1).ToString() + ".\n"}{facilityList[k].Name}\n{facilityList[k].Picture}", true);
                 panel.WriteText("\n\n", true);
             }
         }
@@ -1246,11 +1264,16 @@ namespace IngameScript
         public string TranslateSpriteName(string name)
         {
             string[] blueprintIds = name.Split('/');
+            var blueprintSubtypeId = blueprintIds[blueprintIds.Length - 1];
+
+            if (modBlueprintSubtypeIdResultMap.Count > 0 && modBlueprintSubtypeIdResultMap.ContainsKey(blueprintSubtypeId)) {
+                blueprintSubtypeId = modBlueprintSubtypeIdResultMap[blueprintSubtypeId];
+            }
 
             string temp = "Textures\\FactionLogo\\Empty.dds";
             foreach (var sprite in spritesList)
             {
-                if (sprite.IndexOf(blueprintIds[blueprintIds.Length - 1]) != -1)
+                if (sprite.IndexOf(blueprintSubtypeId) != -1)
                 {
                     temp = sprite;
                     break;
