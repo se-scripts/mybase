@@ -1242,14 +1242,25 @@ namespace IngameScript
 
             //  isproduction box
             float x3 = x2 + h - 0.5f;
+            DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, background_Color);
             if (isEnabled)
             {
-                if (isProducing) DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, new Color(0, 140, 0));
-                else DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, new Color(130, 100, 0));
+                if (isProducing)
+                {
+                    DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, new Color(0, 140, 0));
+                    DrawLogo(frame, x3, y1, boxWH_Float);
+                }
+                else {
+                    DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, new Color(130, 100, 0));
+                    sprite = MySprite.CreateSprite("Danger", new Vector2(x3, y1), new Vector2(boxWH_Float, boxWH_Float));
+                    frame.Add(sprite);
+                }
             }
             else
             {
                 DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, new Color(178, 9, 9));
+                sprite = MySprite.CreateSprite("Cross", new Vector2(x3, y1), new Vector2(boxWH_Float, boxWH_Float));
+                frame.Add(sprite);
             }
             if (isCooperative) DrawImage(frame, "Circle", x3, y1, h - 7, new Color(0, 0, 255));
 
