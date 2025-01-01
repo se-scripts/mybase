@@ -540,6 +540,7 @@ namespace IngameScript
             bool isCargoSameConstructAs = (isCargoSameConstructAsStr == "true");
 
             cargoContainers.Clear();
+            statisticsPanels.Clear();
             panels.Clear();
             panels_Overall.Clear();
             panels_Items_All.Clear();
@@ -1870,7 +1871,6 @@ namespace IngameScript
         private int statsTimeInterval = 5; // s
         private DateTime lastTime;
         public void UpdateItemStatsList() {
-            if (statisticsPanel == null) return;
             TimeSpan elapsedTime = DateTime.Now - lastTime;
             if (elapsedTime.TotalSeconds < statsTimeInterval) return;
 
