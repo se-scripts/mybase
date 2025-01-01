@@ -1248,12 +1248,15 @@ namespace IngameScript
                 if (isProducing)
                 {
                     DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, new Color(0, 140, 0));
-                    DrawLogo(frame, x3, y1, boxWH_Float);
+                    sprite = MySprite.CreateSprite("Textures\\FactionLogo\\Builders\\BuilderIcon_7.dds", new Vector2(x3, y1), new Vector2(boxWH_Float, boxWH_Float));
+                    frame.Add(sprite);
                 }
                 else {
                     DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, new Color(130, 100, 0));
-                    sprite = MySprite.CreateSprite("Danger", new Vector2(x3, y1), new Vector2(boxWH_Float, boxWH_Float));
-                    frame.Add(sprite);
+                    if (itemAmount != "0") {
+                        sprite = MySprite.CreateSprite("Danger", new Vector2(x3, y1), new Vector2(boxWH_Float, boxWH_Float));
+                        frame.Add(sprite);
+                    }
                 }
             }
             else
