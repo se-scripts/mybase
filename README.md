@@ -201,6 +201,12 @@ Length=21
 21=MyObjectBuilder_Ingot/DeuteriumContainer
 ```
 
+如果您需要监控的物品类型数目大于20条，那么一个屏幕装不下，您需要配置多个面板进行分屏幕：
+
+LCD的命名规则是 `LCD__Statistics_Display:{X}`，这里的X从1开始，代表第几个统计屏幕，
+
+比如将一个LCD命名为`LCD__Statistics_Display:1`，代表第一个统计的LCD，同理第二个就是`LCD__Statistics_Display:2`，第三个就是`LCD__Statistics_Display:3`
+
 # 生产设备蓝图图标映射配置 [ModBlueprintSubtypeIdResultMap]
 
 当前配置处于，编程块的自定义配置，修改后需重置代码

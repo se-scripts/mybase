@@ -31,6 +31,7 @@ namespace IngameScript
         List<IMyCargoContainer> cargoContainers = new List<IMyCargoContainer>();
         IMyTextPanel statisticsPanel = null;
         IMyTextPanel testPanel = null;
+        List<IMyTextPanel> statisticsPanels = new List<IMyTextPanel>();
         List<IMyTextPanel> panels = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Items_All = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Items_Ore = new List<IMyTextPanel>();
@@ -563,6 +564,7 @@ namespace IngameScript
             if (sPanRes != null) statisticsPanel = (IMyTextPanel)sPanRes;
             var tPanRes = GridTerminalSystem.GetBlockWithName("TEST");
             if (tPanRes != null) testPanel = (IMyTextPanel) tPanRes;
+            GridTerminalSystem.GetBlocksOfType(statisticsPanels, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD__Statistics_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_Ore, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ore_Inventory_Display:"));
@@ -1937,21 +1939,38 @@ namespace IngameScript
                 }
             }
 
-            RenderStatisticsPanel();
-
+            RenderStatisticsPanel(statisticsPanel, itemStatsList);
+            RenderStatisticsPanels();
         }
 
 
 
-        public void RenderStatisticsPanel() { 
-            if (statisticsPanel == null) { return; }
-            var frame = statisticsPanel.DrawFrame();
-            statisticsPanel.ContentType = ContentType.SCRIPT;
-            for (int i = 0; i < itemStatsList.Count; i++)
+        public void RenderStatisticsPanel(IMyTextPanel panel, List<ItemStats> stats) { 
+            if (panel == null || stats == null || stats.Count == 0) { return; }
+            var frame = panel.DrawFrame();
+            panel.ContentType = ContentType.SCRIPT;
+            for (int i = 0; i < Math.Min(20, stats.Count); i++)
             {
-                RenderLcdItemStatsUnit(i, frame, itemStatsList[i]);
+                RenderLcdItemStatsUnit(i, frame, stats[i]);
             }
             frame.Dispose();
+        }
+
+        public void RenderStatisticsPanels() { 
+            if (statisticsPanels == null ||  statisticsPanels.Count == 0) { return; }
+            foreach (var panel in statisticsPanels) {
+                var names = panel.CustomName.Split(':');
+                if (names.Length != 2) { continue; }
+                var index = Convert.ToInt32(names[1]);
+                int start = 20 * (index - 1);
+                int end = start + 20;
+                var count = itemStatsList.Count;
+                end = Math.Min(end, count - 1);
+                start = start > count ? 0 : start;
+                List<ItemStats> newStats = itemStatsList.GetRange(start, end - start);
+                RenderStatisticsPanel(panel, newStats);
+            }
+
         }
 
         public string ConvertTimeStr(long totalSeconds) {
