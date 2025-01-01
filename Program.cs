@@ -8,13 +8,6 @@ using VRage.Game.ModAPI.Ingame.Utilities;
 using VRageMath;
 using System.Linq;
 using VRage;
-using System.Drawing;
-using Color = VRageMath.Color;
-using System.Collections.Specialized;
-using Sandbox.Game.Entities;
-using System.Diagnostics;
-using System.Collections.ObjectModel;
-using VRageRender.Utils;
 
 namespace IngameScript
 {
@@ -37,6 +30,7 @@ namespace IngameScript
 
         List<IMyCargoContainer> cargoContainers = new List<IMyCargoContainer>();
         IMyTextPanel statisticsPanel = null;
+        IMyTextPanel testPanel = null;
         List<IMyTextPanel> panels = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Items_All = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Items_Ore = new List<IMyTextPanel>();
@@ -567,6 +561,8 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(panels, b => b.IsSameConstructAs(Me));
             var sPanRes = GridTerminalSystem.GetBlockWithName("LCD_Statistics");
             if (sPanRes != null) statisticsPanel = (IMyTextPanel)sPanRes;
+            var tPanRes = GridTerminalSystem.GetBlockWithName("TEST");
+            if (tPanRes != null) testPanel = (IMyTextPanel) tPanRes;
             GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_Ore, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ore_Inventory_Display:"));
@@ -1949,25 +1945,13 @@ namespace IngameScript
 
         public void RenderStatisticsPanel() { 
             if (statisticsPanel == null) { return; }
-            string res = "物品库存变化统计\n" + DateTime.Now.ToString() + "\n";
-            foreach (var itemStats in itemStatsList) { 
-                res += TranslateName(itemStats.Name);
-                res += ": ";
-                res += itemStats.Count.ToString("N0") + "  |  ";
-                res += itemStats.Difference;
-                res += " /"+ statsTimeInterval + "秒";
-
-                if (itemStats.Difference < 0 && itemStats.Count > 10)
-                {
-                    var speed = Math.Abs(itemStats.Difference) / Convert.ToInt64(statsTimeInterval);
-                    var time = itemStats.Count / speed;
-                    string timeStr = ConvertTimeStr(Convert.ToInt64(time));
-                    res += " | " + timeStr;
-                }
-
-                res += "\n";
+            var frame = statisticsPanel.DrawFrame();
+            statisticsPanel.ContentType = ContentType.SCRIPT;
+            for (int i = 0; i < itemStatsList.Count; i++)
+            {
+                RenderLcdItemStatsUnit(i, frame, itemStatsList[i]);
             }
-            statisticsPanel.WriteText(res);
+            frame.Dispose();
         }
 
         public string ConvertTimeStr(long totalSeconds) {
@@ -1979,21 +1963,101 @@ namespace IngameScript
 
             string formattedTime = "";
             if (days > 0)
-                formattedTime += $"{days}天";
+                return $"{days}天{hours}时";
             if (hours > 0)
-                formattedTime += $"{hours}小时";
+                return $"{hours}小时{minutes}分";
             if (minutes > 0)
-                formattedTime += $"{minutes}分钟";
+                return $"{minutes}分钟{seconds}秒";
             if (seconds > 0 || formattedTime == "") // 如果秒数大于0，或者没有显示任何时间单位，则显示秒
-                formattedTime += $"{seconds}秒";
+                return $"{seconds}秒";
 
-            return formattedTime;
+            return $"{seconds}秒";
+        }
+
+        public void RenderTestPanel() {
+            if (testPanel == null) return;
+            //testPanel.ContentType = ContentType.SCRIPT;
+            //var frame = testPanel.DrawFrame();
+            //for (int i = 0; i < itemStatsList.Count; i++) {
+            //    RenderLcdItemStatsUnit(i, frame, itemStatsList[i]);
+            //}
+            //frame.Dispose();
+        }
+
+        float lineHeight = 25.5F;
+        public void RenderLcdItemStatsUnit(int index, MySpriteDrawFrame frame, ItemStats itemStats)
+        {
+            //  ItemAmount box
+            float h = lineHeight;
+            float width = 150f;
+            float x1 = width / 2;
+            float y1 = lineHeight / 2 + lineHeight * index;
+            float textY = y1 - lineHeight / 2 + 2F, textSize = 0.75f;
+            DrawBox(frame, x1, y1, width, lineHeight, background_Color);
+            PanelWriteText(frame, itemStats.Count.ToString("N0"), x1 + width / 2 - 2f, textY, textSize, TextAlignment.RIGHT);
+
+            //  picture box
+            float x2 = x1 + width / 2 + lineHeight / 2 + 0.5f;
+            float boxWH_Float = lineHeight - 1;
+            DrawBox(frame, x2, y1, lineHeight, lineHeight, background_Color);
+            MySprite sprite = MySprite.CreateSprite(itemStats.Name, new Vector2(x2, y1), new Vector2(boxWH_Float, boxWH_Float));
+            frame.Add(sprite);
+
+            // name box
+            float nameWidth = 100f;
+            float x3 = x2 + nameWidth / 2 + lineHeight / 2 + 0.5f;
+            DrawBox(frame, x3, y1, nameWidth, lineHeight, background_Color);
+            string name = TranslateName(itemStats.Name);
+            if (name.Length > 7) name = name.Substring(0, 6) + "...";
+            PanelWriteText(frame, name, x2 + lineHeight / 2 + 2f, textY, textSize, TextAlignment.LEFT);
+
+            // up or down box
+            float x4 = x3 + nameWidth / 2 + lineHeight / 2 + 0.5f;
+            DrawBox(frame, x4, y1, lineHeight, lineHeight, background_Color);
+            string spriteName = "LCD_Emote_Neutral";
+            Color color = Color.White;
+            if (itemStats.Difference > 0) {
+                spriteName = "LCD_Emote_Happy";
+                color = new Color(0, 140, 0);
+            }
+            if (itemStats.Difference < 0) {
+                spriteName = "LCD_Emote_Sad";
+                color = new Color(130, 100, 0);
+            }
+            sprite = MySprite.CreateSprite(spriteName, new Vector2(x4, y1), new Vector2(boxWH_Float - 4, boxWH_Float - 4));
+            sprite.Color = color;
+            frame.Add(sprite);
+            sprite.Color = Color.White;
+
+            // speed box
+            float speedBoxWidth = 100f;
+            float x5 = x4 + speedBoxWidth / 2 + lineHeight / 2 + 0.5f;
+            DrawBox(frame, x5, y1, speedBoxWidth, lineHeight, background_Color);
+            var difference = itemStats.Difference;
+            var differenceStr = "";
+            if (Math.Abs(difference) > 1000) differenceStr = (difference / 1000).ToString("N0") + "K";
+            else differenceStr = difference.ToString("N0");
+            PanelWriteText(frame, differenceStr + " /" + statsTimeInterval + "秒", x5 - speedBoxWidth / 2 + 2f, textY, textSize, TextAlignment.LEFT);
+
+            // 预计消耗时间盒子
+            float tiemBoxwidth = 112f;
+            float x6 = x4 + lineHeight / 2 + speedBoxWidth + tiemBoxwidth / 2 + 0.5f;
+            DrawBox(frame, x6, y1, tiemBoxwidth, lineHeight, background_Color);
+            if (itemStats.Difference < 0 && itemStats.Count > 10)
+            {
+                var speed = Math.Abs(itemStats.Difference) / Convert.ToInt64(statsTimeInterval);
+                var time = itemStats.Count / speed;
+                string timeStr = ConvertTimeStr(Convert.ToInt64(time));
+                PanelWriteText(frame, timeStr, x6 - tiemBoxwidth / 2 + 2f, textY, textSize, TextAlignment.LEFT);
+            }
         }
 
         public void Main(string argument, UpdateType updateSource)
         {
             Echo($"{DateTime.Now}");
             Echo("Program is running.");
+
+            RenderTestPanel();
 
             if (argument == "ReloadBlocksFromGridTerminalSystem" || argument == "ReloadBlocksFromGridTerminalSystem1" || argument == "ReloadBlocksFromGridTerminalSystem2")
             {
