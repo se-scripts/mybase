@@ -564,7 +564,7 @@ namespace IngameScript
             if (sPanRes != null) statisticsPanel = (IMyTextPanel)sPanRes;
             var tPanRes = GridTerminalSystem.GetBlockWithName("TEST");
             if (tPanRes != null) testPanel = (IMyTextPanel) tPanRes;
-            GridTerminalSystem.GetBlocksOfType(statisticsPanels, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD__Statistics_Display:"));
+            GridTerminalSystem.GetBlocksOfType(statisticsPanels, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Statistics_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_Ore, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Ore_Inventory_Display:"));
