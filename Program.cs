@@ -1999,11 +1999,8 @@ namespace IngameScript
                 if (names.Length != 2) { continue; }
                 var index = Convert.ToInt32(names[1]);
                 int start = 20 * (index - 1);
-                int end = start + 20;
-                var count = itemStatsList.Count;
-                end = Math.Min(end, count - 1);
-                start = start > count ? 0 : start;
-                List<ItemStats> newStats = itemStatsList.GetRange(start, end - start);
+                int end = start + Math.Min(19, itemStatsList.Count - 1 - start);
+                List<ItemStats> newStats = itemStatsList.GetRange(start, end - start + 1);
                 RenderStatisticsPanel(panel, newStats);
             }
 
