@@ -2087,7 +2087,8 @@ namespace IngameScript
             DrawBox(frame, x5, y1, speedBoxWidth, lineHeight, background_Color);
             var difference = itemStats.Difference;
             var differenceStr = "";
-            if (Math.Abs(difference) > 1000) differenceStr = (difference / 1000).ToString("N0") + "K";
+            if (Math.Abs(difference) > 1000000) differenceStr = (difference / 1000000).ToString("N0") + "M";
+            else if(Math.Abs(difference) > 1000) differenceStr = (difference / 1000).ToString("N0") + "K";
             else differenceStr = difference.ToString("N0");
             PanelWriteText(frame, differenceStr + " /" + statsTimeInterval + "秒", x5 - speedBoxWidth / 2 + 2f, textY, textSize, TextAlignment.LEFT);
 
