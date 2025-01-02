@@ -1636,6 +1636,7 @@ namespace IngameScript
 
         const string InputItemListSelection = "InputItemList";
         const string refineriesAutoManagerSelection = "RefineriesAutoManager", notAddWhenInputItemHasValue = "NotAddWhenInputItemHasValue", defaultNotAddWhenInputItemHasValue = "true";
+        const string joinHandsInputItemRelationSelection = "JoinHandsInputItemRelation", joinHandsInputItemRelationLength = "Length";
         MyIni _refineryIni = new MyIni();
 
         /// <summary>
@@ -1660,16 +1661,25 @@ namespace IngameScript
             if (!_refineryIni.TryParse(customData, out result))
                 throw new Exception(result.ToString());
 
+            // 是否有输入列表配置，如没有则添加
             if (!_refineryIni.ContainsKey(refineriesAutoManagerSelection, notAddWhenInputItemHasValue)) _refineryIni.Set(refineriesAutoManagerSelection, notAddWhenInputItemHasValue, defaultNotAddWhenInputItemHasValue);
 
             // 关闭耗尽
-            if (refinery.UseConveyorSystem) refinery.UseConveyorSystem = false;
+            if (refinery.UseConveyorSystem) refinery.UseConveyorSystem = false; 
+            
+            // 是否有联合精炼配置，如没有则添加
+            if (!_refineryIni.ContainsKey(joinHandsInputItemRelationSelection, joinHandsInputItemRelationLength)) _refineryIni.Set(joinHandsInputItemRelationSelection, joinHandsInputItemRelationLength, 0);
+            List<string[]> joinHandsItemRelations = new List<string[]>();
+            int joinHandsItemRelationLengthInt = _refineryIni.Get(joinHandsInputItemRelationSelection, joinHandsInputItemRelationLength).ToInt32();
+            for (int i = 1; i <= joinHandsItemRelationLengthInt; i++) { 
+                joinHandsItemRelations.Add(_refineryIni.Get(joinHandsInputItemRelationSelection, i.ToString()).ToString().Split(':'));
+            }
 
             long residualVolume = refinery.InputInventory.MaxVolume.RawValue - refinery.InputInventory.CurrentVolume.RawValue;
 
             foreach (var cargo in cargoContainers) {
                 List<MyInventoryItem> items = new List<MyInventoryItem>();
-                cargo.GetInventory().GetItems(items);
+                cargo.GetInventory().GetItems(items, (i) => i.Type.ToString().StartsWith("MyObjectBuilder_Ore"));
                 foreach (var item in items)
                 {
                     string typeStr = item.Type.ToString();
@@ -1677,13 +1687,39 @@ namespace IngameScript
                     string chTypeStr = TranslateName(typeStr);
 
                     if (!cargo.GetInventory().CanTransferItemTo(refinery.InputInventory, item.Type)) continue;
-                    if (!typeStr.StartsWith("MyObjectBuilder_Ore")) continue;
 
                     if (!_refineryIni.ContainsKey(InputItemListSelection, key)) _refineryIni.Set(InputItemListSelection, key, chTypeStr + ":" + Math.Min(10000, residualVolume).ToString());
 
                     var strs = _refineryIni.Get(InputItemListSelection, key).ToString().Split(':');
                     var defineValue = long.Parse(strs[1]);
-                    if (defineValue <= 0) continue;
+                    if (defineValue <= 100) continue;
+
+                    string[] needJoinHandsItemRealtion = { };
+                    foreach (var joinHandsItemRelation in joinHandsItemRelations) {
+                        foreach (var typeStr2 in joinHandsItemRelation) {
+                            if (typeStr2 == typeStr) {
+                                needJoinHandsItemRealtion = joinHandsItemRelation;
+                                break;
+                            }
+                        }
+                        if (needJoinHandsItemRealtion.Length > 0) { break; }
+                    }
+
+                    // 校验箱子里的联合精炼列表里的物品数目都大于0，如果有一项小于0，则不移动该原料物品
+                    bool needMove = true;
+                    foreach (var needCheckTypeStr in needJoinHandsItemRealtion) {
+                        foreach (var c2 in cargoContainers) {
+                            int amount = c2.GetInventory().GetItemAmount(MyItemType.Parse(needCheckTypeStr)).ToIntSafe();
+                            if (amount <= 0) { 
+                                needMove = false; 
+                                break;
+                            }
+                        }
+                        if (!needMove) { break; }
+                    }
+                    if (!needMove) continue;
+
+
                     var rItem = refinery.InputInventory.FindItem(item.Type);
 
                     if (rItem.HasValue && _refineryIni.Get(refineriesAutoManagerSelection, notAddWhenInputItemHasValue).ToBoolean()) continue;
