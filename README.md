@@ -113,6 +113,17 @@
 这个如果配置成false，那么脚本每次检测的时候，都会将你的精炼厂入料口数量添加到配置的数量，
 意味着只有你箱子里还有矿，那么永远都精炼入料口第一个矿，直到第一个矿全部精炼完毕。
 
+### [JoinHandsInputItemRelation]
+这个是联合精炼的功能，如果这个单行里面几种原料，只要有一种原料的数量没有大于100，那么所有的原料无论上面的`InputItemList`里配置的数量是多少都不会拉取，
+彻底解决需要多个原料才能精炼的原矿，卡在入料口第一格，导致其它的原矿无法精炼的问题。
+
+例子:
+```
+[JoinHandsInputItemRelation]
+Length=1
+1=MyObjectBuilder_Ore/铝矿:MyObjectBuilder_Ore/氦矿
+```
+
 # [CargoAutoManager]
 这个是物品箱子自动分类的功能；
 
