@@ -218,6 +218,9 @@ LCD的命名规则是 `LCD_Statistics_Display:{X}`，这里的X从1开始，代�
 
 比如将一个LCD命名为`LCD_Statistics_Display:1`，代表第一个统计的LCD，同理第二个就是`LCD_Statistics_Display:2`，第三个就是`LCD_Statistics_Display:3`
 
+关于面板的表情含义：绿色开心代表物品在这个时间间隔内数目增加， 白色无表情代表物品在这个时间间隔内数目没变化，黄色闷闷不乐代表物品在这个时间间隔内数目在减少。
+
+
 # 生产设备蓝图图标映射配置 [ModBlueprintSubtypeIdResultMap]
 
 当前配置处于，编程块的自定义配置，修改后需重置代码
