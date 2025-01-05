@@ -8,6 +8,7 @@ using VRage.Game.ModAPI.Ingame.Utilities;
 using VRageMath;
 using System.Linq;
 using VRage;
+using Sandbox.Game.Entities;
 
 namespace IngameScript
 {
@@ -1339,9 +1340,11 @@ namespace IngameScript
                     break;
                 case 6:
                     Bottles_to_Tanks("HydrogenBottle", hydrogenTanks);
+                    //ThanksBottlesToCargos(oxygenTanks);
                     break;
                 case 7:
                     Bottles_to_Tanks("OxygenBottle", oxygenTanks);
+                    //ThanksBottlesToCargos(hydrogenTanks);
                     break;
                 case 8:
                     RefineriesAutoManager();
@@ -1610,6 +1613,21 @@ namespace IngameScript
                 }
             }
         }// Bottles_to_Tanks END!
+
+        public void ThanksBottlesToCargos(List<IMyGasTank> tanks) {
+            foreach (var tank in tanks)
+            {
+                List<MyInventoryItem> items1 = new List<MyInventoryItem>();
+                tank.GetInventory().GetItems(items1, (i) => !i.GetType().ToString().Equals("MyObjectBuilder_Ore/Ice"));
+                foreach (var cargo in cargoContainers) {
+                    foreach (var item in items1) {
+                        if (tank.GetInventory().CanTransferItemTo(cargo.GetInventory(), item.Type)) {
+                            tank.GetInventory().TransferItemTo(cargo.GetInventory(), item);
+                        }
+                    }
+                }
+            }
+        }
 
 
         public void ShowProductionQueue()
