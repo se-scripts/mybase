@@ -8,7 +8,6 @@ using VRage.Game.ModAPI.Ingame.Utilities;
 using VRageMath;
 using System.Linq;
 using VRage;
-using Sandbox.Game.Entities;
 
 namespace IngameScript
 {
@@ -31,6 +30,7 @@ namespace IngameScript
 
         List<IMyCargoContainer> cargoContainers = new List<IMyCargoContainer>();
         IMyTextPanel statisticsPanel = null;
+        IMyTextPanel farmPlotStatusPanel = null;
         IMyTextPanel testPanel = null;
         List<IMyTextPanel> statisticsPanels = new List<IMyTextPanel>();
         List<IMyTextPanel> panels = new List<IMyTextPanel>();
@@ -49,6 +49,7 @@ namespace IngameScript
         List<IMyPowerProducer> powerProducers = new List<IMyPowerProducer>();
         List<IMyReactor> reactors = new List<IMyReactor>();
         List<IMyGasGenerator> gasGenerators = new List<IMyGasGenerator>();
+        List<IMyFarmPlotLogic> farmPlotLogics = new List<IMyFarmPlotLogic>();
         List<string> spritesList = new List<string>();
 
 
@@ -535,7 +536,8 @@ namespace IngameScript
             }
         }
 
-        public void GetBlocksFromGridTerminalSystem() {
+        public void GetBlocksFromGridTerminalSystem()
+        {
             string isCargoSameConstructAsStr = defaultIsCargoSameConstructAsValue;
             GetConfiguration_from_CustomData(basicConfigSelection, isCargoSameConstructAsKey, out isCargoSameConstructAsStr);
             bool isCargoSameConstructAs = (isCargoSameConstructAsStr == "true");
@@ -558,6 +560,7 @@ namespace IngameScript
             powerProducers.Clear();
             reactors.Clear();
             gasGenerators.Clear();
+            farmPlotLogics.Clear();
 
             GridTerminalSystem.GetBlocksOfType(cargoContainers, b => (isCargoSameConstructAs ? b.IsSameConstructAs(Me) : true));
 
@@ -565,7 +568,9 @@ namespace IngameScript
             var sPanRes = GridTerminalSystem.GetBlockWithName("LCD_Statistics");
             if (sPanRes != null) statisticsPanel = (IMyTextPanel)sPanRes;
             var tPanRes = GridTerminalSystem.GetBlockWithName("TEST");
-            if (tPanRes != null) testPanel = (IMyTextPanel) tPanRes;
+            if (tPanRes != null) testPanel = (IMyTextPanel)tPanRes;
+            var fPlotsStatusPanRes = GridTerminalSystem.GetBlockGroupWithName("LCD_FARM_PLOT_STATUS");
+            if (fPlotsStatusPanRes != null) farmPlotStatusPanel = (IMyTextPanel)fPlotsStatusPanRes;
             GridTerminalSystem.GetBlocksOfType(statisticsPanels, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Statistics_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Overall, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Overall_Display"));
             GridTerminalSystem.GetBlocksOfType(panels_Items_All, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Inventory_Display:"));
@@ -602,6 +607,7 @@ namespace IngameScript
 
             GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
 
+            GridTerminalSystem.GetBlocksOfType(farmPlotLogics);
         }
 
         public void GetAllItems()
@@ -2086,11 +2092,13 @@ namespace IngameScript
             DrawBox(frame, x4, y1, lineHeight, lineHeight, background_Color);
             string spriteName = "LCD_Emote_Neutral";
             Color color = Color.White;
-            if (itemStats.Difference > 0) {
+            if (itemStats.Difference > 0)
+            {
                 spriteName = "LCD_Emote_Happy";
                 color = new Color(0, 140, 0);
             }
-            if (itemStats.Difference < 0) {
+            if (itemStats.Difference < 0)
+            {
                 spriteName = "LCD_Emote_Sad";
                 color = new Color(130, 100, 0);
             }
@@ -2106,7 +2114,7 @@ namespace IngameScript
             var difference = itemStats.Difference;
             var differenceStr = "";
             if (Math.Abs(difference) > 1000000) differenceStr = (difference / 1000000).ToString("N0") + "M";
-            else if(Math.Abs(difference) > 1000) differenceStr = (difference / 1000).ToString("N0") + "K";
+            else if (Math.Abs(difference) > 1000) differenceStr = (difference / 1000).ToString("N0") + "K";
             else differenceStr = difference.ToString("N0");
             PanelWriteText(frame, differenceStr + " /" + statsTimeInterval + "秒", x5 - speedBoxWidth / 2 + 2f, textY, textSize, TextAlignment.LEFT);
 
@@ -2121,6 +2129,49 @@ namespace IngameScript
                 string timeStr = ConvertTimeStr(Convert.ToInt64(time));
                 PanelWriteText(frame, timeStr, x6 - tiemBoxwidth / 2 + 2f, textY, textSize, TextAlignment.LEFT);
             }
+        }
+
+        public void ShowFarmPlotStatus()
+        {
+            if (farmPlotStatusPanel == null) return;
+            farmPlotStatusPanel.ContentType = ContentType.SCRIPT;
+            var frame = farmPlotStatusPanel.DrawFrame();
+            for (int i = 0; i < farmPlotLogics.Count; i++)
+            {
+                RenderFarmStatsUnit(i, frame, farmPlotLogics[i]);
+            }
+            frame.Dispose();
+        }
+
+        public void RenderFarmStatsUnit(int index, MySpriteDrawFrame frame, IMyFarmPlotLogic farmPlotLogic)
+        {
+            // 健康度小于百分之60，则是悲伤的表情
+            float h = lineHeight;
+            float boxWH_Float = lineHeight - 1;
+            float width = 150f;
+            float x1 = width / 2;
+            float y1 = lineHeight / 2 + lineHeight * index;
+            float textY = y1 - lineHeight / 2 + 2F;
+            DrawBox(frame, x1, y1, lineHeight, lineHeight, background_Color);
+            string spriteName = "LCD_Emote_Neutral";
+            Color color = Color.White;
+            if (farmPlotLogic.IsPlantPlanted)
+            {
+                spriteName = "LCD_Emote_Happy";
+                color = new Color(0, 140, 0);
+            }
+            else
+            {
+                spriteName = "LCD_Emote_Sad";
+                color = new Color(130, 100, 0);
+            }
+            
+            MySprite sprite = MySprite.CreateSprite(spriteName, new Vector2(x1, y1), new Vector2(boxWH_Float - 4, boxWH_Float - 4));
+            sprite.Color = color;
+            frame.Add(sprite);
+            sprite.Color = Color.White;
+
+
         }
 
         public void Main(string argument, UpdateType updateSource)
@@ -2154,6 +2205,10 @@ namespace IngameScript
                 case 1:
                     Echo("ShowItems");
                     ShowItems();
+                    break;
+                case 3:
+                    Echo("ShowFarmPlotStatus");
+                    ShowFarmPlotStatus();
                     break;
                 case 6:
                     Echo("ShowFacilities");
