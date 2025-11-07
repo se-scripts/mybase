@@ -68,7 +68,8 @@ namespace IngameScript
             , isAssemblerSameConstructAsKey = "IsAssemblerSameConstructAs", defaultIsAssemblerSameConstructAsValue = "true"
             , isRefinerySameConstructAsKey = "IsRefinerySameConstructAs", defaultIsRefinerySameConstructAsValue = "true"
             , isPowerProducerSameConstructAsKey = "IsPowerProducerSameConstructAs", defaultIsPowerProducerSameConstructAsValue = "true"
-            , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "true";
+            , isReactorSameConstructAsKey = "IsReactorSameConstructAs", defaultIsReactorSameConstructAsValue = "true"
+            , isCargoAutoManagerSameConstructAsKey = "IsCargoAutoManagerSameConstructAs", defaultIsCargoAutoManagerSameConstructAsValue = "true";
         const string overallConfigSeletion = "OverallConfig", displayAssemblerCustomName = "DisplayAssemblerName";
         const string modBlueprintSubtypeIdResultMapSelection = "ModBlueprintSubtypeIdResultMap", enableKey = "enable", modBlueprintSubtypeIdResultMapLengthKey = "Length";
         Dictionary<string, string> modBlueprintSubtypeIdResultMap = new Dictionary<string, string>();
@@ -1828,9 +1829,19 @@ namespace IngameScript
             }
             if (!_ini.Get(cargoAutoManagerSelection, enableCargoAutoManagerKey).ToBoolean()) return;
 
+            // 读取方块是否当前网格的配置
+            if (!_ini.ContainsKey(cargoAutoManagerSelection, isCargoAutoManagerSameConstructAsKey))
+            {
+                _ini.Set(cargoAutoManagerSelection, isCargoAutoManagerSameConstructAsKey, defaultIsCargoAutoManagerSameConstructAsValue);
+                Me.CustomData = _ini.ToString();
+            }
+            string isCargoAutoManagerSameConstructAsStr = defaultIsCargoAutoManagerSameConstructAsValue;
+            GetConfiguration_from_CustomData(cargoAutoManagerSelection, isCargoAutoManagerSameConstructAsKey, out isCargoAutoManagerSameConstructAsStr);
+            bool isCargoAutoManagerSameConstructAs = (isCargoAutoManagerSameConstructAsStr == "true");
 
             List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, block => block.HasInventory && !filterBlockNames.Contains(block.BlockDefinition.TypeIdString) && !block.DisplayNameText.Contains(CARGO_DISABLE_TAG));
+
+            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks, block => (isCargoAutoManagerSameConstructAs ? block.IsSameConstructAs(Me) : true) && block.HasInventory && !filterBlockNames.Contains(block.BlockDefinition.TypeIdString) && !block.DisplayNameText.Contains(CARGO_DISABLE_TAG));
             Echo($"有效货箱数:{blocks.Count}");
             //矿物箱子
             var oreBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_ORE_TAG)).ToList();
@@ -1842,6 +1853,7 @@ namespace IngameScript
             var toolBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_TOOL_TAG)).ToList();
             //弹药箱子
             var ammoBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_AMMO_TAG)).ToList();
+            // TODO 农作物箱子 <=> (消费品箱子 和 种子箱子)
 
             IEnumerable<String> oreBlockNameList = oreBlock.Select(d => d.Name);
             IEnumerable<String> ingotBlockNameList = ingotBlock.Select(d => d.Name);
