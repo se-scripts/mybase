@@ -1802,6 +1802,11 @@ namespace IngameScript
         string CARGO_TOOL_TAG = "[工具]";
         // 存放弹药的货箱标签
         string CARGO_AMMO_TAG = "[弹药]";
+        // 存放种子的货箱标签
+        string CARGO_SEED_TAG = "[种子]";
+        // 存放消费品的货箱标签
+        string CARGO_CONSUMABLE_TAG = "[消费品]";
+
         // 不计入统计的货箱标签
         string CARGO_DISABLE_TAG = "[禁止]";
         string[] filterBlockNames = {
@@ -1853,13 +1858,19 @@ namespace IngameScript
             var toolBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_TOOL_TAG)).ToList();
             //弹药箱子
             var ammoBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_AMMO_TAG)).ToList();
-            // TODO 农作物箱子 <=> (消费品箱子 和 种子箱子)
+            //种子箱子
+            var seedBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_SEED_TAG)).ToList();
+            //消费品箱子
+            var consumableBlock = blocks.Where(d => d.DisplayNameText.Contains(CARGO_CONSUMABLE_TAG)).ToList();
+            
 
             IEnumerable<String> oreBlockNameList = oreBlock.Select(d => d.Name);
             IEnumerable<String> ingotBlockNameList = ingotBlock.Select(d => d.Name);
             IEnumerable<String> componentBlockNameList = componentBlock.Select(d => d.Name);
             IEnumerable<String> toolBlockNameList = toolBlock.Select(d => d.Name);
             IEnumerable<String> ammoBlockNameList = ammoBlock.Select(d => d.Name);
+            IEnumerable<String> seedBlockNameList = seedBlock.Select(d => d.Name);
+            IEnumerable<String> consumableBlockNameList = consumableBlock.Select(d => d.Name);
 
             foreach (IMyTerminalBlock block in blocks)
             {
@@ -1884,12 +1895,16 @@ namespace IngameScript
                 List<MyInventoryItem> componentItems = getItem(block, componentBlockNameList, currentInventory, "MyObjectBuilder_Component");
                 List<MyInventoryItem> toolItems = getItem(block, toolBlockNameList, currentInventory, null, typeIdTools);
                 List<MyInventoryItem> ammoItems = getItem(block, ammoBlockNameList, currentInventory, "MyObjectBuilder_AmmoMagazine");
+                List<MyInventoryItem> seedItems = getItem(block, ammoBlockNameList, currentInventory, "MyObjectBuilder_SeedItem");
+                List<MyInventoryItem> consumableItems = getItem(block, ammoBlockNameList, currentInventory, "MyObjectBuilder_ConsumableItem");
 
                 TransferItem(oreItems, block, currentInventory, oreBlock);
                 TransferItem(ingotItems, block, currentInventory, ingotBlock);
                 TransferItem(componentItems, block, currentInventory, componentBlock);
                 TransferItem(toolItems, block, currentInventory, toolBlock);
                 TransferItem(ammoItems, block, currentInventory, ammoBlock);
+                TransferItem(seedItems, block, currentInventory, seedBlock);
+                TransferItem(consumableItems, block, currentInventory, consumableBlock);
             }
 
         }
@@ -2190,6 +2205,12 @@ namespace IngameScript
         {
             Echo($"{DateTime.Now}");
             Echo("Program is running.");
+
+            // 临时测试用
+            // IMyTerminalBlock test = GridTerminalSystem.GetBlockWithName("科技休眠仓");
+            // DebugLCD(test.BlockDefinition.TypeId.ToString() 
+            // + "\nHasInventory=" + test.HasInventory);
+
 
             RenderTestPanel();
 
