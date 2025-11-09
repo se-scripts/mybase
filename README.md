@@ -42,7 +42,7 @@
 
 # 如何使用
 
-视频演示：<https://www.bilibili.com/video/BV1AQktYcEuT/>
+steam创意工坊搜mybase
 
 进这个网址 [Program.cs](Program.cs)
 
