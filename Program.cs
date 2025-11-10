@@ -118,13 +118,36 @@ namespace IngameScript
         Facility_Struct[] assemblerList;
 
 
-
-
-        public Program()
+        public void SetUpdateFrequency()
         {
             Runtime.UpdateFrequency = UpdateFrequency.Once | UpdateFrequency.Update10;
 
+            string refreshRate = "FF", refreshRateKey = "RefreshRate";
+            if (!_ini.ContainsKey(basicConfigSelection, refreshRateKey))
+            {
+                _ini.Set(basicConfigSelection, refreshRateKey, refreshRate);
+                Me.CustomData = _ini.ToString();
+            }
+            GetConfiguration_from_CustomData(basicConfigSelection, refreshRateKey, out refreshRate);
+            if ("F".Equals(refreshRate))
+            {
+                Runtime.UpdateFrequency = UpdateFrequency.Update100;
+            }
+            else if ("FFF".Equals(refreshRate))
+            {
+                Runtime.UpdateFrequency = UpdateFrequency.Update1;
+            }
+            else
+            {
+                Runtime.UpdateFrequency = UpdateFrequency.Update10;
+            }
+        }
+
+        public Program()
+        {
             SetDefultConfiguration();
+
+            SetUpdateFrequency();
 
             BuildTranslateDic();
 
