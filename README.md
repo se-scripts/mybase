@@ -56,6 +56,7 @@ steam创意工坊搜mybase
 结束行
 ![image](https://github.com/se-scripts/inventory-graphic/assets/46225881/6740f7e2-f7e6-4f36-ab58-08f4d856180e)
 
+PS: 看行号没用，脚本更新行号会变
 
 # 关于拆卸设备时的脚本报错
 
