@@ -56,7 +56,7 @@ steam创意工坊搜mybase
 结束行
 ![image](https://github.com/se-scripts/inventory-graphic/assets/46225881/6740f7e2-f7e6-4f36-ab58-08f4d856180e)
 
-PS: 看行号没用，脚本更新行号会变
+PS: 看行号没用，脚本更新行号会变，还有如提示脚本字符超了，建议临时新建个txt，复制后Cltr+A全选，然后按Shift+Tab三次，移除每行前面的空格。
 
 # 关于拆卸设备时的脚本报错
 
